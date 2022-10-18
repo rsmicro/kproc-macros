@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "kproc-parser",
+    "kproc-examples",
+]

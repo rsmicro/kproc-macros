@@ -1,0 +1,10 @@
+[package]
+name = "kproc-parser"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+log = "0.4.17"
