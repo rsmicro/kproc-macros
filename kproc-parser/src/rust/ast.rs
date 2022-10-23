@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use std::fmt::Display;
+use std::fmt::{format, Display};
 use std::rc::Rc;
 use std::vec::Vec;
 
@@ -25,15 +25,50 @@ impl RustAST {
 
     fn fmt_struct(&self, vis: &Option<String>, name: &String, attrs: &Vec<RustAST>) -> String {
         let mut source: String = if let Some(vis) = vis {
-            format!("{} struct {} {{", vis.as_str(), name.as_str())
+            format!("{} struct {} {{\n", vis.as_str(), name.as_str())
         } else {
-            format!("struct {} {{", name.as_str())
+            format!("struct {} {{\n", name.as_str())
         };
         for attr in attrs {
-            source += format!("{},\n", attr).as_str();
+            // FIXME: add code identation
+            source += format!("     {},\n", attr).as_str();
         }
         source += "}\n";
         source
+    }
+
+    fn fmt_filed(&self, vis: &Option<String>, name: &str, ty: Rc<RustAST>) -> String {
+        let mut code = format!("{name}: {}", ty);
+        if let Some(vis) = vis {
+            let vis = format!("{vis}");
+            code = format!("{vis} {code}");
+        }
+        code
+    }
+
+    fn fmt_ty(
+        &self,
+        is_ref: bool,
+        is_mut: bool,
+        lifetime: Option<String>,
+        specific_ty: Option<Rc<RustAST>>,
+        name: &str,
+    ) -> String {
+        let mut prefix = String::new();
+        if is_ref {
+            prefix += "&";
+        }
+
+        if let Some(lifetime) = lifetime {
+            prefix += lifetime.as_str();
+        }
+
+        if is_mut {
+            prefix += " mut";
+        }
+
+        // FIXME: support generics
+        format!("{prefix} {name}").trim().to_owned()
     }
 }
 
@@ -41,8 +76,14 @@ impl Display for RustAST {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let source = match self {
             RustAST::Struct(visibility, name, atts) => self.fmt_struct(&visibility, &name, &atts),
-            RustAST::Field(_, _, _) => "/* TODO  filed  */".to_string(),
-            RustAST::FieldType(_, _, _, _, _) => "/* TODO type */".to_string(),
+            RustAST::Field(vis, name, ty) => self.fmt_filed(vis, name, ty.to_owned()),
+            RustAST::FieldType(is_ref, is_mut, lifetime, specific_ty, name) => self.fmt_ty(
+                is_ref.to_owned(),
+                is_mut.to_owned(),
+                lifetime.to_owned(),
+                specific_ty.to_owned(),
+                name.as_str(),
+            ),
         };
         write!(f, "{}", source)
     }
