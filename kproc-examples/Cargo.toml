@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-kproc-parser = { path = "../kproc-parser" }
+kproc-macros-examples = { path = "../kproc-macros-examples" }
 log = "0.4.17"
 env_logger = "0.9.1"
