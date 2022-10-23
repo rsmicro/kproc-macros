@@ -6,12 +6,13 @@ use proc_macro::TokenStream;
 mod kproc_macros;
 mod rust;
 
-use crate::rust::rust_struct::parse_struct;
+use crate::{kproc_macros::KTokenStream, rust::rust_struct::parse_struct};
 
 /// Mock this will be some parse macros
 #[proc_macro_derive(RustBuilder)]
 pub fn derive_rust(input: TokenStream) -> TokenStream {
     println!("{:?}", input);
-    let ast = parse_struct(&mut input.into_iter());
+    let mut stream = KTokenStream::new(&input);
+    let ast = parse_struct(&mut stream);
     ast.to_token_stream()
 }

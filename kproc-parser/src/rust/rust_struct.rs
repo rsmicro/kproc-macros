@@ -1,42 +1,57 @@
 //! API to parse the rust struct provided as
 //! TokenStream.
-use crate::rust::ast::RustAST;
-use proc_macro::TokenTree;
+use crate::{kproc_macros::KTokenStream, rust::ast::RustAST};
 use std::rc::Rc;
 
 // parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
-pub fn parse_struct<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> RustAST {
-    let visibility = parse_visibility_identifier(ast);
-    assert_eq!("struct", advance(ast).to_string());
-    let name = advance(ast);
-
-    let attributes = parse_struct_fields(ast);
+pub fn parse_struct<'c>(ast: &'c mut KTokenStream) -> RustAST {
+    let visibility = if let Some(vs) = parse_visibility_identifier(ast) {
+        ast.next();
+        Some(vs)
+    } else {
+        None
+    };
+    assert_eq!("struct", ast.advance().to_string());
+    let name = ast.advance().to_owned();
+    eprintln!("{name}");
+    let mut group = ast.to_ktoken_stream();
+    let attributes = parse_struct_fields(&mut group);
 
     let new_name = format!("Gen{}", name);
-    RustAST::Struct(visibility, new_name.to_string(), vec![])
+    let stru = RustAST::Struct(visibility, new_name.to_string(), attributes);
+    eprintln!("{:?}", stru);
+    stru
 }
 
-fn parse_struct_fields<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> Vec<RustAST> {
+fn parse_struct_fields(ast: &mut KTokenStream) -> Vec<RustAST> {
     let mut fields = vec![];
-
-    while !is_end(ast) {
+    while !ast.is_end() {
         let field = parse_struct_field(ast);
         //FIXME: LOG me thanks!
         fields.push(field);
     }
-
     return fields;
 }
 
-fn parse_struct_field<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> RustAST {
+fn parse_struct_field(ast: &mut KTokenStream) -> RustAST {
     // name filed
-    let visibility = parse_visibility_identifier(ast);
-    let field_name = advance(ast);
-    //FIXME: log me thanks!
+    let visibility = if let Some(vs) = parse_visibility_identifier(ast) {
+        ast.next();
+        Some(vs)
+    } else {
+        None
+    };
+    let field_name = ast.advance().to_string();
     // : separator
-    let separator = advance(ast);
-    assert_eq!(":", separator.to_string());
+    let separator = ast.advance().clone();
+    assert_eq!(
+        ":",
+        separator.to_string(),
+        "after: {} {}",
+        visibility.unwrap_or("".to_owned()),
+        field_name
+    );
 
     let ty = parse_field_ty(ast);
 
@@ -47,51 +62,49 @@ fn parse_struct_field<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> RustAS
 ///
 /// FIXME: support no reference and mutable field for the moment!
 /// please feel free to contribute
-fn parse_field_ty<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> RustAST {
-    println!("parsing field");
+fn parse_field_ty<'c>(ast: &'c mut KTokenStream) -> RustAST {
+    eprintln!("parsing field ty");
     let ty_ref = check_and_parse_ref(ast);
     let lifetime = check_and_parse_lifetime(ast);
     let ty_mutability = check_and_parse_mut(ast);
     // FIXME: ignore recursion type, contribution welcome :)
     // Suggestion: Think recursively
-    let field_name = advance(ast);
-    RustAST::FieldType(
-        ty_ref,
-        ty_mutability,
-        lifetime,
-        None,
-        field_name.to_string(),
-    )
+    let field_ty = ast.advance().to_string();
+    eprintln!("Type: {field_ty}");
+    assert_eq!(",", ast.advance().to_string().as_str());
+    eprintln!("with comma");
+    RustAST::FieldType(ty_ref, ty_mutability, lifetime, None, field_ty)
 }
 
-fn check_and_parse_ref<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> bool {
-    let token = peek(ast).to_string();
+fn check_and_parse_ref<'c>(ast: &'c mut KTokenStream) -> bool {
+    let token = ast.peek().to_string();
     match token.as_str() {
         "&" => {
-            let _ = advance(ast);
+            ast.next();
             true
         }
         _ => false,
     }
 }
 
-fn check_and_parse_lifetime<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> Option<String> {
-    let token = peek(ast).to_string();
+fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<String> {
+    let token = ast.peek().to_string();
     match token.as_str() {
         "'" => {
-            let _ = advance(ast);
-            let lifetime_name = advance(ast).to_string();
+            // FIXME: add advance by steps API
+            ast.next();
+            let lifetime_name = ast.advance().to_string();
             Some(lifetime_name)
         }
         _ => None,
     }
 }
 
-fn check_and_parse_mut<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> bool {
-    let token = peek(ast).to_string();
+fn check_and_parse_mut<'c>(ast: &'c mut KTokenStream) -> bool {
+    let token = ast.peek().to_string();
     match token.as_str() {
         "mut" => {
-            let _ = advance(ast);
+            ast.next();
             true
         }
         _ => false,
@@ -103,10 +116,10 @@ fn check_and_parse_mut<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> bool 
 ///
 /// FIXME: Return a AST type with a default value on private
 /// to make the code cleaner.
-fn parse_visibility_identifier<'c>(ast: &'c mut dyn Iterator<Item = TokenTree>) -> String {
-    let visibility = peek(ast);
-    match visibility.to_string().as_str() {
-        "pub" => advance(ast).to_string(),
-        _ => "".to_string(),
+fn parse_visibility_identifier<'c>(ast: &'c mut KTokenStream) -> Option<String> {
+    let visibility = ast.peek().to_string();
+    if visibility.contains("pub") && !visibility.contains("_") {
+        return Some(visibility);
     }
+    None
 }
