@@ -67,10 +67,7 @@ dependencies = [
 
 [[package]]
 name = "kproc-parser"
-version = "0.1.0"
-dependencies = [
- "log",
-]
+version = "0.0.1-alpla.1"
 
 [[package]]
 name = "libc"
