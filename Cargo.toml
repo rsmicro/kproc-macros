@@ -3,4 +3,5 @@
 members = [
     "kproc-parser",
     "kproc-examples",
+    "kproc-macros-examples",
 ]

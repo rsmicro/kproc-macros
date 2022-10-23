@@ -1,5 +1,4 @@
-use kproc_parser::RustBuilder;
-use std::rc::Rc;
+use kproc_macros_examples::RustBuilder;
 
 #[derive(RustBuilder)]
 pub struct Foo {

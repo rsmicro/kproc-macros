@@ -1,5 +1,5 @@
-use proc_macro::TokenStream;
-use std::fmt::{format, Display};
+use proc_macro2::TokenStream;
+use std::fmt::Display;
 use std::rc::Rc;
 use std::vec::Vec;
 
@@ -17,7 +17,7 @@ pub enum RustAST {
 }
 
 impl RustAST {
-    pub(crate) fn to_token_stream(&self) -> TokenStream {
+    pub fn to_token_stream(&self) -> TokenStream {
         let ast_str = self.to_string();
         println!("AST to Tokens \n\n{}", ast_str);
         ast_str.parse().unwrap()

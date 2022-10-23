@@ -1,0 +1,10 @@
+[package]
+name = "kproc-macros-examples"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+kproc-parser = { path = "../kproc-parser" }
