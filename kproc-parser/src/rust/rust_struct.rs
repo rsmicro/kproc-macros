@@ -2,16 +2,10 @@
 //! TokenStream.
 use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
+use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
-use crate::{
-    kproc_macros::KTokenStream,
-    rust::{
-        ast::RustAST,
-        ast_nodes::{FieldToken, StructToken},
-    },
-};
-
-use super::ast_nodes::FieldTyToken;
+use crate::rust::ast::RustAST;
+use crate::rust::ast_nodes::{FieldToken, FieldTyToken, StructToken};
 
 // parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
@@ -72,7 +66,7 @@ pub fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
         ":",
         separator.to_string(),
         separator,
-        format!("exoected `:` but found {}", separator)
+        format!("expected `:` but found {}", separator)
     );
 
     let ty = parse_field_ty(ast);
@@ -93,11 +87,17 @@ pub fn parse_field_ty(ast: &mut KTokenStream) -> FieldTyToken {
     let ty_ref = check_and_parse_ref(ast);
     let lifetime = check_and_parse_lifetime(ast);
     let ty_mutability = check_and_parse_mut(ast);
-    // FIXME: ignore recursion type, contribution welcome :)
+    // FIXME: ignoring generics for the moment, contribution welcome :)
     // Suggestion: Think recursively
     let field_ty = ast.advance().clone();
     eprintln!("Type: {field_ty}");
-    assert_eq!(",", ast.advance().to_string().as_str());
+    let tok = ast.advance().to_owned();
+    eassert_eq!(
+        ",",
+        tok.to_string().as_str(),
+        tok,
+        "terminator `,` not found, please not the generics are not supported"
+    );
     eprintln!("with comma");
     FieldTyToken {
         reference: ty_ref,
@@ -120,7 +120,6 @@ pub fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTr
     let token = ast.peek().to_string();
     match token.as_str() {
         "'" => {
-            // FIXME: add advance by steps API
             ast.next();
             Some(ast.advance().to_owned())
         }
