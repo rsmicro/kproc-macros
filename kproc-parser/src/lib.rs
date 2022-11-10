@@ -2,7 +2,10 @@
 //! specific language defined inside the procedural
 //! procedural macros. This language can be Rust
 //! itself ofcourse
+#![feature(proc_macro_diagnostic)]
+mod diagnostic;
 pub mod kproc_macros;
+pub mod macros;
 pub mod rust;
 
 pub mod proc_macro {
@@ -12,5 +15,5 @@ pub mod proc_macro {
     #[cfg(any(not(proc_macro_wrapper), proc_macro))]
     extern crate proc_macro as macros;
 
-    pub use macros::{TokenStream, TokenTree};
+    pub use macros::{Diagnostic, TokenStream, TokenTree};
 }
