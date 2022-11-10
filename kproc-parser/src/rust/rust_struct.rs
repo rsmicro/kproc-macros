@@ -1,7 +1,8 @@
 //! API to parse the rust struct provided as
 //! TokenStream.
+use crate::diagnostic::{KDiagnInfo, KDiagnostic};
+use crate::eassert_eq;
 use crate::proc_macro::TokenTree;
-
 use crate::{
     kproc_macros::KTokenStream,
     rust::{
@@ -22,9 +23,14 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream) -> RustAST {
     } else {
         None
     };
-    assert_eq!("struct", ast.advance().to_string());
+    let tok = ast.advance().to_owned();
+    eassert_eq!(
+        "struct",
+        tok.to_string(),
+        tok,
+        format!("expected struct keyword found {}", tok)
+    );
     let name = ast.advance().to_owned();
-    eprintln!("{name}");
     let mut group = ast.to_ktoken_stream();
     let attributes = parse_struct_fields(&mut group);
 
@@ -33,7 +39,6 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream) -> RustAST {
         name,
         attributes,
     };
-    eprintln!("{:?}", stru);
     RustAST::Struct(stru)
 }
 
@@ -63,7 +68,12 @@ pub fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
     if let Some(viss) = &visibility {
         vis = viss.to_string()
     }
-    assert_eq!(":", separator.to_string(), "after: {} {}", vis, field_name);
+    eassert_eq!(
+        ":",
+        separator.to_string(),
+        separator,
+        format!("exoected `:` but found {}", separator)
+    );
 
     let ty = parse_field_ty(ast);
 

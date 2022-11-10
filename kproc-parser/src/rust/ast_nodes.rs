@@ -5,6 +5,7 @@
 //! regarding the position in the source code (span).
 use std::{fmt::Display, rc::Rc};
 
+use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
 
 #[derive(Debug)]
@@ -59,3 +60,7 @@ impl Display for FieldTyToken {
         writeln!(f, "{prefix} {}", self.name)
     }
 }
+
+impl KDiagnostic for StructToken {}
+impl KDiagnostic for FieldToken {}
+impl KDiagnostic for FieldTyToken {}
