@@ -37,7 +37,7 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream) -> RustAST {
     RustAST::Struct(stru)
 }
 
-fn parse_struct_fields(ast: &mut KTokenStream) -> Vec<FieldToken> {
+pub fn parse_struct_fields(ast: &mut KTokenStream) -> Vec<FieldToken> {
     let mut fields = vec![];
     while !ast.is_end() {
         let field = parse_struct_field(ast);
@@ -47,7 +47,7 @@ fn parse_struct_fields(ast: &mut KTokenStream) -> Vec<FieldToken> {
     return fields;
 }
 
-fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
+pub fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
     // name filed
     let visibility = if let Some(vs) = parse_visibility_identifier(ast) {
         let res = Some(vs.clone());
@@ -78,7 +78,7 @@ fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
 ///
 /// FIXME: support no reference and mutable field for the moment!
 /// please feel free to contribute
-fn parse_field_ty(ast: &mut KTokenStream) -> FieldTyToken {
+pub fn parse_field_ty(ast: &mut KTokenStream) -> FieldTyToken {
     eprintln!("parsing field ty");
     let ty_ref = check_and_parse_ref(ast);
     let lifetime = check_and_parse_lifetime(ast);
@@ -98,7 +98,7 @@ fn parse_field_ty(ast: &mut KTokenStream) -> FieldTyToken {
     }
 }
 
-fn check_and_parse_ref<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_ref<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek();
     match token.to_string().as_str() {
         "&" => Some(ast.advance().to_owned()),
@@ -106,7 +106,7 @@ fn check_and_parse_ref<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
     }
 }
 
-fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek().to_string();
     match token.as_str() {
         "'" => {
@@ -118,7 +118,7 @@ fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> 
     }
 }
 
-fn check_and_parse_mut<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_mut<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek().to_string();
     match token.as_str() {
         "mut" => Some(ast.advance().to_owned()),
@@ -131,10 +131,12 @@ fn check_and_parse_mut<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
 ///
 /// FIXME: Return a AST type with a default value on private
 /// to make the code cleaner.
-fn parse_visibility_identifier<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
-    let visibility = ast.peek().to_string();
-    if visibility.contains("pub") && !visibility.contains("_") {
-        return Some(ast.advance().to_owned());
+pub fn parse_visibility_identifier<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+    let visibility = ast.peek();
+    if let TokenTree::Ident(val) = visibility {
+        if val.to_string().contains("pub") {
+            return Some(ast.peek().to_owned());
+        }
     }
     None
 }
