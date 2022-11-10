@@ -5,6 +5,7 @@
 pub mod kproc_macros;
 pub mod rust;
 
-pub mod proc_macros {
+pub mod proc_macro {
     pub use proc_macro2::TokenStream;
+    pub use proc_macro2::TokenTree;
 }
