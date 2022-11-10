@@ -1,5 +1,5 @@
 use kproc_parser::kproc_macros::KTokenStream;
-use kproc_parser::proc_macros::TokenStream as TokenStreamV2;
+use kproc_parser::proc_macro::TokenStream as TokenStreamV2;
 use kproc_parser::rust::rust_struct::parse_struct;
 use proc_macro::TokenStream;
 
