@@ -7,4 +7,4 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-kproc-parser = { path = "../kproc-parser" }
+kproc-parser = { path = "../kproc-parser", features = ["proc_macro_wrapper"] }

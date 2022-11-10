@@ -1,5 +1,5 @@
 //! Kernel procedural macros
-use proc_macro2::{TokenStream, TokenTree};
+use crate::proc_macro::{TokenStream, TokenTree};
 
 #[derive(Debug)]
 pub struct KTokenStream {

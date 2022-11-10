@@ -6,6 +6,11 @@ pub mod kproc_macros;
 pub mod rust;
 
 pub mod proc_macro {
-    pub use proc_macro2::TokenStream;
-    pub use proc_macro2::TokenTree;
+    #[cfg(proc_macro_wrapper)]
+    extern crate proc_macro2 as macros;
+
+    #[cfg(any(not(proc_macro_wrapper), proc_macro))]
+    extern crate proc_macro as macros;
+
+    pub use macros::{TokenStream, TokenTree};
 }
