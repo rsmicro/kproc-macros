@@ -2,6 +2,7 @@
 //! TokenStream.
 use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
+use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 use crate::rust::ast::RustAST;
@@ -9,7 +10,7 @@ use crate::rust::ast_nodes::{FieldToken, FieldTyToken, StructToken};
 
 // parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
-pub fn parse_struct<'c>(ast: &'c mut KTokenStream) -> RustAST {
+pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> RustAST {
     let visibility = if let Some(vs) = parse_visibility_identifier(ast) {
         let res = Some(vs.clone());
         ast.next();
@@ -26,7 +27,7 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream) -> RustAST {
     );
     let name = ast.advance().to_owned();
     let mut group = ast.to_ktoken_stream();
-    let attributes = parse_struct_fields(&mut group);
+    let attributes = parse_struct_fields(&mut group, tracer);
 
     let stru = StructToken {
         visibility: visibility.to_owned(),
@@ -36,17 +37,17 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream) -> RustAST {
     RustAST::Struct(stru)
 }
 
-pub fn parse_struct_fields(ast: &mut KTokenStream) -> Vec<FieldToken> {
+pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
     let mut fields = vec![];
     while !ast.is_end() {
-        let field = parse_struct_field(ast);
+        let field = parse_struct_field(ast, tracer);
         //FIXME: LOG me thanks!
         fields.push(field);
     }
     return fields;
 }
 
-pub fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
+pub fn parse_struct_field(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> FieldToken {
     // name filed
     let visibility = if let Some(vs) = parse_visibility_identifier(ast) {
         let res = Some(vs.clone());
@@ -65,7 +66,7 @@ pub fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
         format!("expected `:` but found {}", separator)
     );
 
-    let ty = parse_field_ty(ast);
+    let ty = parse_field_ty(ast, tracer);
 
     FieldToken {
         visibility: visibility.to_owned(),
@@ -78,23 +79,23 @@ pub fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
 ///
 /// FIXME: support no reference and mutable field for the moment!
 /// please feel free to contribute
-pub fn parse_field_ty(ast: &mut KTokenStream) -> FieldTyToken {
-    eprintln!("parsing field ty");
+pub fn parse_field_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> FieldTyToken {
+    tracer.log("parsing field ty");
     let ty_ref = check_and_parse_ref(ast);
     let lifetime = check_and_parse_lifetime(ast);
     let ty_mutability = check_and_parse_mut(ast);
 
     let field_ty = ast.advance().clone();
-    eprintln!("Type: {field_ty}");
+    tracer.log(format!("Type: {field_ty}").as_str());
     let mut generics = vec![];
 
     if ast.match_tok("<") {
         let _ = ast.advance();
         while !ast.match_tok(">") {
-            let ty = parse_field_ty(ast);
-            eprintln!("{:?}", ty);
+            let ty = parse_field_ty(ast, tracer);
+            tracer.log(format!("{:?}", ty).as_str());
             generics.push(ty);
-            eprintln!("exit from generics while");
+            tracer.log("exit from generics while");
         }
         let tok = ast.advance();
         eassert_eq!(
@@ -114,7 +115,7 @@ pub fn parse_field_ty(ast: &mut KTokenStream) -> FieldTyToken {
             format!("terminator `,` not found but found `{}`", tok.to_string())
         );
     }
-    eprintln!("finish decoding");
+    tracer.log("finish decoding");
 
     FieldTyToken {
         reference: ty_ref,

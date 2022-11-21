@@ -4,6 +4,7 @@
 //! itself ofcourse
 #![feature(proc_macro_diagnostic)]
 mod diagnostic;
+pub mod kparser;
 pub mod kproc_macros;
 pub mod macros;
 pub mod rust;
