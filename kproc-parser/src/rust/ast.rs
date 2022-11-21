@@ -1,9 +1,7 @@
 use proc_macro2::TokenStream;
 use std::fmt::Display;
-use std::rc::Rc;
-use std::vec::Vec;
 
-use super::ast_nodes::{FieldToken, StructToken};
+use super::ast_nodes::StructToken;
 
 #[derive(Debug)]
 pub enum RustAST {

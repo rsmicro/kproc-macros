@@ -1,5 +1,8 @@
 //! Kernel procedural macros
-use crate::proc_macro::{TokenStream, TokenTree};
+use crate::{
+    eassert,
+    proc_macro::{TokenStream, TokenTree},
+};
 
 #[derive(Debug)]
 pub struct KTokenStream {
@@ -30,6 +33,9 @@ impl KTokenStream {
     /// in position - 1
     pub fn advance<'c>(&'c mut self) -> &'c TokenTree {
         self.next();
+        if self.is_end() {
+            return &self.kstream.last().unwrap();
+        }
         self.prev()
     }
 
@@ -38,12 +44,18 @@ impl KTokenStream {
     }
 
     pub fn prev<'c>(&'c self) -> &'c TokenTree {
+        assert!(self.pos < self.size, "prev: out of bound");
         &self.kstream[self.pos - 1]
     }
 
     /// return he token at the current position
     pub fn peek<'c>(&'c self) -> &'c TokenTree {
+        assert!(self.pos < self.size);
         &self.kstream[self.pos]
+    }
+
+    pub fn match_tok(&self, tok: &str) -> bool {
+        self.peek().to_string().as_str() == tok
     }
 
     /// check if it is reach the end of the stream

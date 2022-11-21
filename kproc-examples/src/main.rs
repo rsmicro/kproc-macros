@@ -6,6 +6,13 @@ pub struct Foo {
     self_ref: u32,
 }
 
+#[derive(RustBuilder)]
+pub struct Boo {
+    attr: String,
+    self_ref: u32,
+    gen: Vec<Foo>,
+}
+
 fn main() {
     let obj = Foo {
         attr: "Alibaba".to_string(),
@@ -21,6 +28,16 @@ mod tests {
         let obj = crate::Foo {
             attr: "Alibaba".to_string(),
             self_ref: 0,
+        };
+        assert_eq!(obj.get_attr(), obj.attr);
+    }
+
+    #[test]
+    fn generics_works() {
+        let obj = crate::Boo {
+            attr: "Alibaba".to_string(),
+            self_ref: 0,
+            gen: vec![],
         };
         assert_eq!(obj.get_attr(), obj.attr);
     }
