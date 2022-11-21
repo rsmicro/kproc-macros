@@ -58,10 +58,6 @@ pub fn parse_struct_field(ast: &mut KTokenStream) -> FieldToken {
     let field_name = ast.advance().to_owned();
     // : separator
     let separator = ast.advance().clone();
-    let mut vis = String::new();
-    if let Some(viss) = &visibility {
-        vis = viss.to_string()
-    }
     eassert_eq!(
         ":",
         separator.to_string(),
@@ -87,23 +83,44 @@ pub fn parse_field_ty(ast: &mut KTokenStream) -> FieldTyToken {
     let ty_ref = check_and_parse_ref(ast);
     let lifetime = check_and_parse_lifetime(ast);
     let ty_mutability = check_and_parse_mut(ast);
-    // FIXME: ignoring generics for the moment, contribution welcome :)
-    // Suggestion: Think recursively
+
     let field_ty = ast.advance().clone();
     eprintln!("Type: {field_ty}");
-    let tok = ast.advance().to_owned();
-    eassert_eq!(
-        ",",
-        tok.to_string().as_str(),
-        tok,
-        "terminator `,` not found, please not the generics are not supported"
-    );
-    eprintln!("with comma");
+    let mut generics = vec![];
+
+    if ast.match_tok("<") {
+        let _ = ast.advance();
+        while !ast.match_tok(">") {
+            let ty = parse_field_ty(ast);
+            eprintln!("{:?}", ty);
+            generics.push(ty);
+            eprintln!("exit from generics while");
+        }
+        let tok = ast.advance();
+        eassert_eq!(
+            ">",
+            tok.to_string(),
+            tok,
+            format!("expected > but found {}", tok.to_string())
+        );
+    }
+
+    if ast.match_tok(",") {
+        let tok = ast.advance().to_owned();
+        eassert_eq!(
+            ",",
+            tok.to_string().as_str(),
+            tok,
+            format!("terminator `,` not found but found `{}`", tok.to_string())
+        );
+    }
+    eprintln!("finish decoding");
+
     FieldTyToken {
         reference: ty_ref,
         mutable: ty_mutability,
         lifetime: lifetime.to_owned(),
-        generics: vec![],
+        generics: generics.to_owned(),
         name: field_ty.to_owned(),
     }
 }

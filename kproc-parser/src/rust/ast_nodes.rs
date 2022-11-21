@@ -3,7 +3,7 @@
 //!
 //! Each implementation contains information
 //! regarding the position in the source code (span).
-use std::{fmt::Display, rc::Rc};
+use std::fmt::Display;
 
 use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
@@ -32,12 +32,12 @@ impl Display for FieldToken {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FieldTyToken {
     pub reference: Option<TokenTree>,
     pub mutable: Option<TokenTree>,
     pub lifetime: Option<TokenTree>,
-    pub generics: Vec<Rc<FieldTyToken>>,
+    pub generics: Vec<FieldTyToken>,
     pub name: TokenTree,
 }
 
