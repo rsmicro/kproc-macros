@@ -13,6 +13,13 @@ pub struct Boo {
     pub gen: Vec<Foo>,
 }
 
+#[derive(RustBuilder)]
+pub struct BooLifetime<'a> {
+    attr: String,
+    self_ref: u32,
+    gen: Vec<&'a Foo>,
+}
+
 fn main() {
     let obj = Foo {
         attr: "Alibaba".to_string(),

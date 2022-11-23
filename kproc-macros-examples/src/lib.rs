@@ -1,4 +1,4 @@
-use kproc_parser::kparser::{KParserTracer, DummyTracer};
+use kproc_parser::kparser::{DummyTracer, KParserTracer};
 use kproc_parser::kproc_macros::KTokenStream;
 use kproc_parser::proc_macro::TokenStream as TokenStreamV2;
 use kproc_parser::rust::ast::RustAST;
@@ -14,11 +14,10 @@ impl KParserTracer for Tracer {
     }
 }
 
-
 /// Mock this will be some parse macros
 #[proc_macro_derive(RustBuilder)]
 pub fn derive_rust(input: TokenStream) -> TokenStream {
-    let tracer = DummyTracer{};
+    let tracer = Tracer {};
     let inputv2 = TokenStreamV2::from(input);
     let mut stream = KTokenStream::new(&inputv2);
 
@@ -29,15 +28,23 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
 
 fn generate_impl(ast: &RustAST) -> TokenStream {
     let RustAST::Struct(StructToken {
-        name, attributes, ..
+        name,
+        attributes,
+        generics,
+        ..
     }) = ast;
-        let code = format!(
-            "impl {} {{ \
+    let gen = if let Some(str_gen) = generics {
+        format!("{}", str_gen)
+    } else {
+        "".to_owned()
+    };
+    let code = format!(
+        "impl{} {}{} {{ \
                     fn get_{}(&self) -> {} {{ \
                        return self.{}.clone()\
                     }}\
                 }}",
-            name, attributes[0].name, attributes[0].ty, attributes[0].name,
-        );
-        code.parse().unwrap()
+        gen, name, gen, attributes[0].name, attributes[0].ty, attributes[0].name,
+    );
+    code.parse().unwrap()
 }

@@ -13,6 +13,26 @@ pub struct StructToken {
     pub visibility: Option<TokenTree>,
     pub name: TokenTree,
     pub attributes: Vec<FieldToken>,
+    pub generics: Option<StructTyToken>,
+}
+
+#[derive(Debug)]
+pub struct StructTyToken {
+    pub lifetimes: Vec<TokenTree>,
+    pub generics: Vec<TokenTree>,
+}
+
+impl Display for StructTyToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut gen = "<".to_string();
+        for lifetime in &self.lifetimes {
+            gen += format!("'{},", lifetime.to_string()).as_str();
+        }
+        // FIXME: print the generics types
+        gen = gen.strip_suffix(",").unwrap_or(&gen).to_string();
+        gen += ">";
+        write!(f, "{}", gen)
+    }
 }
 
 #[derive(Debug)]
