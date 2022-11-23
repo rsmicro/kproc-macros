@@ -8,6 +8,8 @@ use crate::proc_macro::TokenTree;
 use crate::rust::ast::RustAST;
 use crate::rust::ast_nodes::{FieldToken, FieldTyToken, StructToken};
 
+use super::ast_nodes::StructTyToken;
+
 // parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
 pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> RustAST {
@@ -26,6 +28,9 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
         format!("expected struct keyword found {}", tok)
     );
     let name = ast.advance().to_owned();
+    let generics = parse_struct_generics_and_lifetime(ast, tracer);
+    tracer.log(format!("Struct generics ty: {:?}", generics).as_str());
+
     let mut group = ast.to_ktoken_stream();
     let attributes = parse_struct_fields(&mut group, tracer);
 
@@ -33,8 +38,33 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
         visibility: visibility.to_owned(),
         name,
         attributes,
+        generics,
     };
     RustAST::Struct(stru)
+}
+
+pub fn parse_struct_generics_and_lifetime(
+    ast: &mut KTokenStream,
+    _: &dyn KParserTracer,
+) -> Option<StructTyToken> {
+    if ast.match_tok("<") {
+        let mut lifetimes = vec![];
+        while !ast.match_tok(">") {
+            let _ = ast.advance();
+            if let Some(lifetime) = check_and_parse_lifetime(ast) {
+                lifetimes.push(lifetime);
+            }
+
+            // FIXME: parse the generics types
+        }
+        let _ = ast.advance();
+        let ty = StructTyToken {
+            lifetimes,
+            generics: vec![],
+        };
+        return Some(ty);
+    }
+    None
 }
 
 pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
