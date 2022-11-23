@@ -2,7 +2,6 @@ use kproc_macros_examples::RustBuilder;
 
 trait GenTrait {}
 
-
 #[derive(RustBuilder)]
 pub struct Foo {
     attr: String,
@@ -29,7 +28,6 @@ pub struct BooLifetimeDyn<'a> {
     self_ref: u32,
     gen: Vec<&'a dyn GenTrait>,
 }
-
 
 fn main() {
     let obj = Foo {
