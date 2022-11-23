@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use crate::proc_macro::TokenStream;
 use std::fmt::Display;
 
 use super::ast_nodes::StructToken;
