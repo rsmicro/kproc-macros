@@ -10,7 +10,7 @@ pub struct Foo {
 pub struct Boo {
     attr: String,
     self_ref: u32,
-    gen: Vec<Foo>,
+    pub gen: Vec<Foo>,
 }
 
 fn main() {
@@ -39,6 +39,6 @@ mod tests {
             self_ref: 0,
             gen: vec![],
         };
-        assert_eq!(obj.get_attr(), obj.attr);
+        assert!(obj.gen.is_empty());
     }
 }
