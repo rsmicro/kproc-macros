@@ -54,8 +54,8 @@ pub fn parse_struct_generics_and_lifetime(
             if let Some(lifetime) = check_and_parse_lifetime(ast) {
                 lifetimes.push(lifetime);
             }
-
             // FIXME: parse the generics types
+            // FIXME: parse dyn tok
         }
         let _ = ast.advance();
         let ty = StructTyToken {
@@ -97,6 +97,7 @@ pub fn parse_struct_field(ast: &mut KTokenStream, tracer: &dyn KParserTracer) ->
     );
 
     let ty = parse_field_ty(ast, tracer);
+    tracer.log(format!("top type field: {}", ty).as_str());
 
     FieldToken {
         visibility: visibility.to_owned(),
@@ -114,6 +115,7 @@ pub fn parse_field_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Fie
     let ty_ref = check_and_parse_ref(ast);
     let lifetime = check_and_parse_lifetime(ast);
     let ty_mutability = check_and_parse_mut(ast);
+    let dyn_tok = check_and_parse_dyn(ast);
 
     let field_ty = ast.advance().clone();
     tracer.log(format!("Type: {field_ty}").as_str());
@@ -151,6 +153,7 @@ pub fn parse_field_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Fie
         reference: ty_ref,
         mutable: ty_mutability,
         lifetime: lifetime.to_owned(),
+        dyn_tok,
         generics: generics.to_owned(),
         name: field_ty.to_owned(),
     }
@@ -179,6 +182,14 @@ pub fn check_and_parse_mut<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek().to_string();
     match token.as_str() {
         "mut" => Some(ast.advance().to_owned()),
+        _ => None,
+    }
+}
+
+pub fn check_and_parse_dyn<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+    let token = ast.peek().to_string();
+    match token.as_str() {
+        "dyn" => Some(ast.advance().to_owned()),
         _ => None,
     }
 }

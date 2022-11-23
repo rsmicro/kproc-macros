@@ -23,7 +23,9 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
 
     let ast = parse_struct(&mut stream, &tracer);
 
-    generate_impl(&ast)
+    let toks = generate_impl(&ast);
+    tracer.log(format!("{}", toks).as_str());
+    toks
 }
 
 fn generate_impl(ast: &RustAST) -> TokenStream {
