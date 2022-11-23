@@ -57,6 +57,7 @@ pub struct FieldTyToken {
     pub reference: Option<TokenTree>,
     pub mutable: Option<TokenTree>,
     pub lifetime: Option<TokenTree>,
+    pub dyn_tok: Option<TokenTree>,
     pub generics: Vec<FieldTyToken>,
     pub name: TokenTree,
 }

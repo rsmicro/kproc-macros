@@ -1,5 +1,8 @@
 use kproc_macros_examples::RustBuilder;
 
+trait GenTrait {}
+
+
 #[derive(RustBuilder)]
 pub struct Foo {
     attr: String,
@@ -19,6 +22,14 @@ pub struct BooLifetime<'a> {
     self_ref: u32,
     gen: Vec<&'a Foo>,
 }
+
+#[derive(RustBuilder)]
+pub struct BooLifetimeDyn<'a> {
+    attr: String,
+    self_ref: u32,
+    gen: Vec<&'a dyn GenTrait>,
+}
+
 
 fn main() {
     let obj = Foo {
@@ -42,6 +53,16 @@ mod tests {
     #[test]
     fn generics_works() {
         let obj = crate::Boo {
+            attr: "Alibaba".to_string(),
+            self_ref: 0,
+            gen: vec![],
+        };
+        assert!(obj.gen.is_empty());
+    }
+
+    #[test]
+    fn generics_with_dyn_works() {
+        let obj = crate::BooLifetimeDyn {
             attr: "Alibaba".to_string(),
             self_ref: 0,
             gen: vec![],
