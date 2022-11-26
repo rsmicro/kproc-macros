@@ -1,4 +1,4 @@
-use kproc_parser::kparser::{DummyTracer, KParserTracer};
+use kproc_parser::kparser::KParserTracer;
 use kproc_parser::kproc_macros::KTokenStream;
 use kproc_parser::proc_macro::TokenStream as TokenStreamV2;
 use kproc_parser::rust::ast::RustAST;
@@ -15,7 +15,7 @@ impl KParserTracer for Tracer {
 }
 
 /// Mock this will be some parse macros
-#[proc_macro_derive(RustBuilder)]
+#[proc_macro_derive(RustBuilder, attributes(build))]
 pub fn derive_rust(input: TokenStream) -> TokenStream {
     let tracer = Tracer {};
     let inputv2 = TokenStreamV2::from(input);
@@ -28,10 +28,12 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
     toks
 }
 
+// FIXME: use the filed attribute to generate the get method when the attribute
+// is specified!
 fn generate_impl(ast: &RustAST) -> TokenStream {
     let RustAST::Struct(StructToken {
         name,
-        attributes,
+        fields: attributes,
         generics,
         ..
     }) = ast;

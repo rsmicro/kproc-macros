@@ -1,8 +1,5 @@
 //! Kernel procedural macros
-use crate::{
-    eassert,
-    proc_macro::{TokenStream, TokenTree},
-};
+use crate::proc_macro::{TokenStream, TokenTree};
 
 #[derive(Debug)]
 pub struct KTokenStream {
@@ -39,6 +36,11 @@ impl KTokenStream {
         self.prev()
     }
 
+    pub fn lookup<'c>(&'c self, step: usize) -> &'c TokenTree {
+        assert!(self.size > self.pos + step);
+        &self.kstream[self.pos + step]
+    }
+
     pub fn next(&mut self) {
         self.pos += 1;
     }
@@ -55,7 +57,7 @@ impl KTokenStream {
     }
 
     pub fn match_tok(&self, tok: &str) -> bool {
-        self.peek().to_string().as_str() == tok
+        self.peek().match_tok(tok)
     }
 
     /// check if it is reach the end of the stream
@@ -70,6 +72,20 @@ impl KTokenStream {
         }
     }
 
+    pub fn opt_ktoken_stream(&self) -> Option<KTokenStream> {
+        match self.peek() {
+            TokenTree::Group(stream) => Some(KTokenStream::new(&stream.stream())),
+            _ => None,
+        }
+    }
+
+    pub fn is_group(&self) -> bool {
+        match self.peek() {
+            TokenTree::Group(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn consume_brace(&mut self) {
         let tok = self.peek();
         match tok.to_string().as_str() {
@@ -80,3 +96,14 @@ impl KTokenStream {
         }
     }
 }
+
+pub trait MatchTok
+where
+    Self: ToString,
+{
+    fn match_tok(&self, tok: &str) -> bool {
+        self.to_string().as_str() == tok
+    }
+}
+
+impl MatchTok for TokenTree {}

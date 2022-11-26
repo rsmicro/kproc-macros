@@ -1,16 +1,18 @@
 //! API to parse the rust struct provided as
 //! TokenStream.
+use std::collections::HashMap;
+
 use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
 use crate::kparser::KParserTracer;
-use crate::kproc_macros::KTokenStream;
+use crate::kproc_macros::{KTokenStream, MatchTok};
 use crate::proc_macro::TokenTree;
 use crate::rust::ast::RustAST;
 use crate::rust::ast_nodes::{FieldToken, FieldTyToken, StructToken};
 
-use super::ast_nodes::StructTyToken;
+use super::ast_nodes::{AttrToken, AttributeToken, CondAttributeToken, StructTyToken};
 
-// parsing a rust data structure inside a AST that will be easy to
+/// parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
 pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> RustAST {
     let visibility = if let Some(vs) = parse_visibility_identifier(ast) {
@@ -32,12 +34,14 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
     tracer.log(format!("Struct generics ty: {:?}", generics).as_str());
 
     let mut group = ast.to_ktoken_stream();
-    let attributes = parse_struct_fields(&mut group, tracer);
+    let fields = parse_struct_fields(&mut group, tracer);
 
+    //FIXME: store informatio about attribute inside the
+    // struct
     let stru = StructToken {
         visibility: visibility.to_owned(),
         name,
-        attributes,
+        fields,
         generics,
     };
     RustAST::Struct(stru)
@@ -70,7 +74,19 @@ pub fn parse_struct_generics_and_lifetime(
 pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
     let mut fields = vec![];
     while !ast.is_end() {
-        let field = parse_struct_field(ast, tracer);
+        let attr = if let Some(attr) = check_and_parse_cond_attribute(ast, tracer) {
+            tracer.log(format!("attribute found: {:?}", attr).as_str());
+            Some(attr)
+        } else {
+            None
+        };
+        tracer.log(format!("after token {:?}", ast.peek()).as_str());
+        let mut field = parse_struct_field(ast, tracer);
+        if let Some(attr) = attr {
+            // FIXME: improve this solution, I want to search in O(1)
+            // the attribute field and had the field as well
+            field.attrs.insert(attr.name(), attr);
+        }
         //FIXME: LOG me thanks!
         fields.push(field);
     }
@@ -103,6 +119,7 @@ pub fn parse_struct_field(ast: &mut KTokenStream, tracer: &dyn KParserTracer) ->
         visibility: visibility.to_owned(),
         name: field_name.to_owned(),
         ty,
+        attrs: HashMap::new(),
     }
 }
 
@@ -192,6 +209,63 @@ pub fn check_and_parse_dyn<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
         "dyn" => Some(ast.advance().to_owned()),
         _ => None,
     }
+}
+
+pub fn check_and_parse_cond_attribute<'c>(
+    ast: &'c mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> Option<AttrToken> {
+    tracer.log("check and parse an attribute");
+    tracer.log(format!("{:?}", ast.peek()).as_str());
+    if ast.match_tok("#") {
+        let _ = ast.advance();
+        tracer.log(format!("{:?}", ast.peek()).as_str());
+
+        if ast.match_tok("!") {
+            let _ = ast.advance();
+            // check []
+        } else if ast.is_group() {
+            // check (
+            if let TokenTree::Group(_) = ast.lookup(2) {
+                let name = ast.advance().to_owned();
+                let _ = ast.advance();
+                // keep parsing the conditional attribute
+                // FIXME: parse a sequence of attribute
+                let attr = check_and_parse_attribute(ast).unwrap();
+                let conf_attr = CondAttributeToken {
+                    name: name.to_owned(),
+                    value: attr,
+                };
+                return Some(AttrToken::CondAttr(conf_attr));
+            } else {
+                // parsing the normal attribute
+                // FIXME: parse a sequence of attribute
+                if let Some(attr) = check_and_parse_attribute(&mut ast.to_ktoken_stream()) {
+                    // consume group token
+                    let _ = ast.advance();
+                    return Some(AttrToken::Attr(attr));
+                }
+            }
+        }
+    }
+    None
+}
+
+pub fn check_and_parse_attribute<'c>(ast: &'c mut KTokenStream) -> Option<AttributeToken> {
+    let name = ast.advance().to_owned();
+    // FIXME: check if it is a valid name
+    if !ast.is_end() && ast.match_tok("=") {
+        let _ = ast.advance();
+        let value = ast.advance().to_owned();
+        return Some(AttributeToken {
+            name: name.to_owned(),
+            value: Some(value.to_owned()),
+        });
+    }
+    Some(AttributeToken {
+        name: name.to_owned(),
+        value: None,
+    })
 }
 
 /// parse visibility identifier like pub(crate) and return an option

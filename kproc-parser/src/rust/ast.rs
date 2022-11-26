@@ -23,7 +23,7 @@ impl RustAST {
         } else {
             format!("struct {} {{\n", token.name)
         };
-        for attr in &token.attributes {
+        for attr in &token.fields {
             // FIXME: add code identation
             source += format!("     {},\n", attr).as_str();
         }
