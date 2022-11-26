@@ -1,5 +1,7 @@
 //! API to parse the rust struct provided as
 //! TokenStream.
+use std::collections::HashMap;
+
 use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
 use crate::kparser::KParserTracer;
@@ -32,12 +34,14 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
     tracer.log(format!("Struct generics ty: {:?}", generics).as_str());
 
     let mut group = ast.to_ktoken_stream();
-    let attributes = parse_struct_fields(&mut group, tracer);
+    let fields = parse_struct_fields(&mut group, tracer);
 
+    //FIXME: store informatio about attribute inside the
+    // struct
     let stru = StructToken {
         visibility: visibility.to_owned(),
         name,
-        attributes,
+        fields,
         generics,
     };
     RustAST::Struct(stru)
@@ -70,11 +74,19 @@ pub fn parse_struct_generics_and_lifetime(
 pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
     let mut fields = vec![];
     while !ast.is_end() {
-        if let Some(attr) = check_and_parse_cond_attribute(ast, tracer) {
+        let attr = if let Some(attr) = check_and_parse_cond_attribute(ast, tracer) {
             tracer.log(format!("attribute found: {:?}", attr).as_str());
-        }
+            Some(attr)
+        } else {
+            None
+        };
         tracer.log(format!("after token {:?}", ast.peek()).as_str());
-        let field = parse_struct_field(ast, tracer);
+        let mut field = parse_struct_field(ast, tracer);
+        if let Some(attr) = attr {
+            // FIXME: improve this solution, I want to search in O(1)
+            // the attribute field and had the field as well
+            field.attrs.insert(attr.name(), attr);
+        }
         //FIXME: LOG me thanks!
         fields.push(field);
     }
@@ -107,6 +119,7 @@ pub fn parse_struct_field(ast: &mut KTokenStream, tracer: &dyn KParserTracer) ->
         visibility: visibility.to_owned(),
         name: field_name.to_owned(),
         ty,
+        attrs: HashMap::new(),
     }
 }
 

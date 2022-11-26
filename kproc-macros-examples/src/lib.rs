@@ -28,10 +28,12 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
     toks
 }
 
+// FIXME: use the filed attribute to generate the get method when the attribute
+// is specified!
 fn generate_impl(ast: &RustAST) -> TokenStream {
     let RustAST::Struct(StructToken {
         name,
-        attributes,
+        fields: attributes,
         generics,
         ..
     }) = ast;

@@ -2,17 +2,17 @@
 //! struct, Fields, FielsTypes
 //!
 //! Each implementation contains information
-//! regarding the position in the source code (span).
-use std::fmt::Display;
-
+//! regarding the position in ostic::KDiagnostic;
 use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
+use std::collections::HashMap;
+use std::fmt::Display;
 
 #[derive(Debug)]
 pub struct StructToken {
     pub visibility: Option<TokenTree>,
     pub name: TokenTree,
-    pub attributes: Vec<FieldToken>,
+    pub fields: Vec<FieldToken>,
     pub generics: Option<StructTyToken>,
 }
 
@@ -40,6 +40,7 @@ pub struct FieldToken {
     pub visibility: Option<TokenTree>,
     pub name: TokenTree,
     pub ty: FieldTyToken,
+    pub attrs: HashMap<String, AttrToken>,
 }
 
 impl Display for FieldToken {
@@ -150,6 +151,15 @@ pub struct AttributeToken {
 pub enum AttrToken {
     Attr(AttributeToken),
     CondAttr(CondAttributeToken),
+}
+
+impl AttrToken {
+    pub fn name(&self) -> String {
+        match self {
+            AttrToken::Attr(tok) => tok.name.to_string(),
+            AttrToken::CondAttr(tok) => tok.name.to_string(),
+        }
+    }
 }
 
 impl KDiagnostic for StructToken {}
