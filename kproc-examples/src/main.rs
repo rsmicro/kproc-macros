@@ -3,7 +3,9 @@ use kproc_macros_examples::RustBuilder;
 trait GenTrait {}
 
 #[derive(RustBuilder)]
+// #[build_struct] // FIXME: support the parsing of this too
 pub struct Foo {
+    #[build]
     attr: String,
     self_ref: u32,
 }

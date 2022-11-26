@@ -82,6 +82,78 @@ impl Display for FieldTyToken {
     }
 }
 
+/// An attribute is a general, free-form metadatum that is
+/// interpreted according to name, convention, language,
+/// and compiler version. Attributes are modeled
+/// on Attributes in ECMA-335, with the syntax coming
+/// from ECMA-334 (C#).
+///
+/// A list of possible attribute syntax is:
+///
+/// ```rust
+/// #![allow(unused)]
+/// fn main() {
+///     // General metadata applied to the enclosing module or crate.
+///     #![crate_type = "lib"]
+///     // A function marked as a unit test
+///     #[test]
+///     fn test_foo() {
+///         /* ... */
+///     }
+///
+///     // A conditionally-compiled module
+///     #[cfg(target_os = "linux")]
+///     mod bar {
+///     /* ... */
+///     }
+///
+///     // A lint attribute used to suppress a warning/error
+///     #[allow(non_camel_case_types)]
+///     type int8_t = i8;
+///
+///     // Inner attribute applies to the entire function.
+///     fn some_unused_variables() {
+///         #![allow(unused_variables)]
+///             let x = ();
+///             let y = ();
+///             let z = ();
+///      }
+/// }
+/// ```
+#[derive(Debug, Clone)]
+pub struct CondAttributeToken {
+    /// name of the attribute
+    pub name: TokenTree,
+    /// value of the attribut contained inside the `()`
+    pub value: AttributeToken,
+}
+
+/// Inner attribute is the simplest attribute that you can find
+/// inside the sintax, in fact this kind of struct contains
+/// information regarding the attribute itself.
+///
+/// ```rust
+/// // #[pin_project]
+/// // #[key = value]
+/// // #![pin_project]
+/// // #![key = value]
+/// ```
+#[derive(Debug, Clone)]
+pub struct AttributeToken {
+    /// name of the attribute
+    pub name: TokenTree,
+    /// an optional value of the attribute
+    pub value: Option<TokenTree>,
+}
+
+#[derive(Debug, Clone)]
+pub enum AttrToken {
+    Attr(AttributeToken),
+    CondAttr(CondAttributeToken),
+}
+
 impl KDiagnostic for StructToken {}
 impl KDiagnostic for FieldToken {}
 impl KDiagnostic for FieldTyToken {}
+impl KDiagnostic for AttributeToken {}
+impl KDiagnostic for CondAttributeToken {}
