@@ -49,7 +49,7 @@ impl Display for FieldToken {
         if let Some(viss) = &self.visibility {
             vis = viss.to_string()
         }
-        writeln!(f, "{} {}: {}", vis, self.name, self.ty)
+        write!(f, "{} {}: {}", vis, self.name, self.ty)
     }
 }
 
@@ -89,7 +89,7 @@ impl Display for FieldTyToken {
             generics += ">";
         }
 
-        writeln!(f, "{prefix} {}{}", self.name, generics)
+        write!(f, "{prefix} {}{}", self.name, generics)
     }
 }
 
