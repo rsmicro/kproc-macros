@@ -42,13 +42,17 @@ fn generate_impl(ast: &RustAST) -> TokenStream {
     } else {
         "".to_owned()
     };
+    let name_attr = attributes[0].name.to_string();
+    let ty = attributes[0].ty.to_string();
     let code = format!(
         "impl{} {}{} {{ \
-                    fn get_{}(&self) -> {} {{ \
-                       return self.{}.clone()\
-                    }}\
+                    fn get_{name_attr}(&self) -> {ty} {{ \
+                       return self.{name_attr}.clone()\
+                    }} \
+                       \
+                    fn set_{name_attr}(&self, inner: {ty}) {{ }}
                 }}",
-        gen, name, gen, attributes[0].name, attributes[0].ty, attributes[0].name,
+        gen, name, gen,
     );
     code.parse().unwrap()
 }
