@@ -70,6 +70,7 @@ impl Display for FieldTyToken {
             prefix += refer.to_string().as_str();
         }
 
+        // FIXME: can be more than one!
         if let Some(lifetime) = &self.lifetime {
             prefix += lifetime.to_string().as_str();
         }
@@ -78,8 +79,17 @@ impl Display for FieldTyToken {
             prefix += format!(" {mutable}").as_str();
         }
 
-        // FIXME: support generics
-        writeln!(f, "{prefix} {}", self.name)
+        let mut generics = "".to_owned();
+        if self.generics.len() > 0 {
+            generics += "<";
+            for generic in &self.generics {
+                generics += format!("{}, ", generic.to_string()).as_str();
+            }
+            generics = generics.strip_suffix(",").unwrap_or(&generics).to_owned();
+            generics += ">";
+        }
+
+        writeln!(f, "{prefix} {}{}", self.name, generics)
     }
 }
 

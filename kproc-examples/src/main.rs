@@ -2,7 +2,7 @@ use kproc_macros_examples::RustBuilder;
 
 trait GenTrait {}
 
-#[derive(RustBuilder)]
+#[derive(RustBuilder, Clone)]
 // #[build_struct] // FIXME: support the parsing of this too
 pub struct Foo {
     #[build]
@@ -29,6 +29,13 @@ pub struct BooLifetimeDyn<'a> {
     attr: String,
     self_ref: u32,
     gen: Vec<&'a dyn GenTrait>,
+}
+
+#[derive(RustBuilder)]
+pub struct BooComplex {
+    pub gen: Vec<Foo>,
+    attr: String,
+    self_ref: u32,
 }
 
 fn main() {
