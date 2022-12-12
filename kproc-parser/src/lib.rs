@@ -16,5 +16,5 @@ pub mod proc_macro {
     #[cfg(any(not(proc_macro_wrapper), proc_macro))]
     extern crate proc_macro as macros;
 
-    pub use macros::{Diagnostic, TokenStream, TokenTree};
+    pub use macros::*;
 }

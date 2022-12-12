@@ -6,6 +6,7 @@ pub struct KDiagnInfo {
 }
 
 impl KDiagnInfo {
+    #[allow(dead_code)]
     pub fn new(msg: &str, help: &str) -> Self {
         KDiagnInfo {
             msg: Some(msg.to_owned()),
