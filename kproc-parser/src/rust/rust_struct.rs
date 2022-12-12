@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
 use crate::kparser::KParserTracer;
-use crate::kproc_macros::{KTokenStream, MatchTok};
+use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 use crate::rust::ast::RustAST;
 use crate::rust::ast_nodes::{FieldToken, FieldTyToken, StructToken};
