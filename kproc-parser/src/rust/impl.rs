@@ -14,5 +14,5 @@ pub fn parse_impl<'c>(ast: &'c mut KTokenStream, _: &dyn KParserTracer) -> RustA
         format!("expected `impl` found `{}`", impl_tok.to_string())
     );
 
-    RustAST::Impl
+    todo!()
 }

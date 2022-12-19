@@ -1,8 +1,8 @@
-use kproc_macros_examples::RustBuilder;
+use kproc_macros_examples::{derive_impl, FromImpl, RustBuilder};
 
 trait GenTrait {}
 
-#[derive(RustBuilder, Clone)]
+#[derive(RustBuilder)]
 // #[build_struct] // FIXME: support the parsing of this too
 pub struct Foo {
     #[build]
@@ -37,6 +37,11 @@ pub struct BooComplex {
     attr: String,
     self_ref: u32,
 }
+
+struct ForImplDerive {}
+
+#[derive_impl]
+impl ForImplDerive {}
 
 fn main() {
     let obj = Foo {
