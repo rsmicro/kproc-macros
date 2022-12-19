@@ -10,7 +10,8 @@ use crate::proc_macro::TokenTree;
 use crate::rust::ast::RustAST;
 use crate::rust::ast_nodes::{FieldToken, FieldTyToken, StructToken};
 
-use super::ast_nodes::{AttrToken, AttributeToken, CondAttributeToken, StructTyToken};
+use super::ast_nodes::{AttrToken, AttributeToken, CondAttributeToken};
+use super::core::*;
 
 /// parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
@@ -30,7 +31,7 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
         format!("expected struct keyword found {}", tok)
     );
     let name = ast.advance().to_owned();
-    let generics = parse_struct_generics_and_lifetime(ast, tracer);
+    let generics = parse_decl_generics_and_lifetime(ast, tracer);
     tracer.log(format!("Struct generics ty: {:?}", generics).as_str());
 
     let mut group = ast.to_ktoken_stream();
@@ -45,30 +46,6 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
         generics,
     };
     RustAST::Struct(stru)
-}
-
-pub fn parse_struct_generics_and_lifetime(
-    ast: &mut KTokenStream,
-    _: &dyn KParserTracer,
-) -> Option<StructTyToken> {
-    if ast.match_tok("<") {
-        let mut lifetimes = vec![];
-        while !ast.match_tok(">") {
-            let _ = ast.advance();
-            if let Some(lifetime) = check_and_parse_lifetime(ast) {
-                lifetimes.push(lifetime);
-            }
-            // FIXME: parse the generics types
-            // FIXME: parse dyn tok
-        }
-        let _ = ast.advance();
-        let ty = StructTyToken {
-            lifetimes,
-            generics: vec![],
-        };
-        return Some(ty);
-    }
-    None
 }
 
 pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
@@ -176,41 +153,6 @@ pub fn parse_field_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Fie
     }
 }
 
-pub fn check_and_parse_ref<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
-    let token = ast.peek();
-    match token.to_string().as_str() {
-        "&" => Some(ast.advance().to_owned()),
-        _ => None,
-    }
-}
-
-pub fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
-    let token = ast.peek().to_string();
-    match token.as_str() {
-        "'" => {
-            ast.next();
-            Some(ast.advance().to_owned())
-        }
-        _ => None,
-    }
-}
-
-pub fn check_and_parse_mut<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
-    let token = ast.peek().to_string();
-    match token.as_str() {
-        "mut" => Some(ast.advance().to_owned()),
-        _ => None,
-    }
-}
-
-pub fn check_and_parse_dyn<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
-    let token = ast.peek().to_string();
-    match token.as_str() {
-        "dyn" => Some(ast.advance().to_owned()),
-        _ => None,
-    }
-}
-
 pub fn check_and_parse_cond_attribute<'c>(
     ast: &'c mut KTokenStream,
     tracer: &dyn KParserTracer,
@@ -266,19 +208,4 @@ pub fn check_and_parse_attribute<'c>(ast: &'c mut KTokenStream) -> Option<Attrib
         name: name.to_owned(),
         value: None,
     })
-}
-
-/// parse visibility identifier like pub(crate) and return an option
-/// value in case it is not defined.
-///
-/// FIXME: Return a AST type with a default value on private
-/// to make the code cleaner.
-pub fn parse_visibility_identifier<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
-    let visibility = ast.peek();
-    if let TokenTree::Ident(val) = visibility {
-        if val.to_string().contains("pub") {
-            return Some(ast.peek().to_owned());
-        }
-    }
-    None
 }

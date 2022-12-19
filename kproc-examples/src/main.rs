@@ -1,8 +1,8 @@
-use kproc_macros_examples::{derive_impl, FromImpl, RustBuilder};
+use kproc_macros_examples::{derive_impl, RustBuilder};
 
 trait GenTrait {}
 
-#[derive(RustBuilder)]
+#[derive(RustBuilder, Clone)]
 // #[build_struct] // FIXME: support the parsing of this too
 pub struct Foo {
     #[build]
