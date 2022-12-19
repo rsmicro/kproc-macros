@@ -172,8 +172,38 @@ impl AttrToken {
     }
 }
 
+/// AST Token to store information about an
+/// `impl` block.
+#[derive(Debug)]
+pub struct ImplToken {
+    /// declaration lifetimes, this is the
+    /// part of the impl block where the
+    /// lifetimes is stored.
+    ///
+    /// This is useful if it is needed some lookup
+    /// or implementing any smart logic with
+    /// it.
+    ///
+    /// Stored with the following idea
+    /// key:value => for the code <'a: 'static, 'b: 'a, 'c: 'a + 'b>
+    /// is translated with `a:static, b:a, c:a + b`
+    pub decl_lifetims: HashMap<TokenTree, Vec<TokenTree>>,
+    /// declaration generics, this is done when
+    /// the generics are declared.
+    ///
+    /// This is similar to the lifetime declaration.
+    pub decl_generics: HashMap<String, TokenTree>,
+    /// The name of the impl Block
+    pub name: TokenTree,
+    /// for the type where the impl block is implemented for
+    // FIXME: we should abstract this token in a better way?
+    // or just rename it?
+    pub for_ty: FieldTyToken,
+}
+
 impl KDiagnostic for StructToken {}
 impl KDiagnostic for FieldToken {}
 impl KDiagnostic for FieldTyToken {}
 impl KDiagnostic for AttributeToken {}
 impl KDiagnostic for CondAttributeToken {}
+impl KDiagnostic for ImplToken {}
