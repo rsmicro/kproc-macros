@@ -8,6 +8,7 @@ pub enum RustAST {
     /// Struct field contain 3 type of information
     /// `Struct(Visibility, Name, Attributes)`
     Struct(StructToken),
+    Impl,
 }
 
 impl RustAST {
@@ -36,6 +37,7 @@ impl Display for RustAST {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let source = match self {
             RustAST::Struct(token) => self.fmt_struct(&token),
+            RustAST::Impl => todo!(),
         };
         write!(f, "{}", source)
     }
