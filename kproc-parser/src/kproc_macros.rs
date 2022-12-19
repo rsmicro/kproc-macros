@@ -28,7 +28,7 @@ impl KTokenStream {
 
     /// advance the position and return the previous element
     /// in position - 1
-    pub fn advance<'c>(&'c mut self) -> &'c TokenTree {
+    pub fn advance(&mut self) -> &TokenTree {
         self.next();
         if self.is_end() {
             return &self.kstream.last().unwrap();
@@ -45,15 +45,19 @@ impl KTokenStream {
         self.pos += 1;
     }
 
-    pub fn prev<'c>(&'c self) -> &'c TokenTree {
+    pub fn prev(&self) -> &TokenTree {
         assert!(self.pos < self.size, "prev: out of bound");
         &self.kstream[self.pos - 1]
     }
 
     /// return he token at the current position
-    pub fn peek<'c>(&'c self) -> &'c TokenTree {
+    pub fn peek(&self) -> &TokenTree {
         assert!(self.pos < self.size);
         &self.kstream[self.pos]
+    }
+
+    pub fn last(&self) -> &TokenTree {
+        &self.kstream.last().unwrap()
     }
 
     pub fn match_tok(&self, tok: &str) -> bool {
