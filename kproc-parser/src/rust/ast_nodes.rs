@@ -187,18 +187,25 @@ pub struct ImplToken {
     /// Stored with the following idea
     /// key:value => for the code <'a: 'static, 'b: 'a, 'c: 'a + 'b>
     /// is translated with `a:static, b:a, c:a + b`
-    pub decl_lifetims: HashMap<TokenTree, Vec<TokenTree>>,
+    pub decl_lifetims: Option<HashMap<TokenTree, Vec<TokenTree>>>,
     /// declaration generics, this is done when
     /// the generics are declared.
     ///
     /// This is similar to the lifetime declaration.
-    pub decl_generics: HashMap<String, TokenTree>,
+    pub decl_generics: Option<HashMap<String, TokenTree>>,
     /// The name of the impl Block
     pub name: TokenTree,
     /// for the type where the impl block is implemented for
     // FIXME: we should abstract this token in a better way?
     // or just rename it?
-    pub for_ty: FieldTyToken,
+    pub for_ty: Option<FieldTyToken>,
+    /// Content of the impl block
+    ///
+    /// It is stored the raw block because
+    /// the kparser library expose all the primitive
+    /// to parse this kind of token tree, and this
+    /// will make a slim version of the library.
+    pub impl_block: TokenTree,
 }
 
 impl KDiagnostic for StructToken {}
