@@ -31,7 +31,12 @@ impl RustAST {
     }
 
     fn fmt_impl(&self, token: &ImplToken) -> String {
-        todo!()
+        let mut code = format!("impl {}", token.name);
+        if let Some(for_ty) = &token.for_ty {
+            code += format!(" for {for_ty}").as_str();
+        }
+        code += token.impl_block.to_string().as_str();
+        code
     }
 }
 
