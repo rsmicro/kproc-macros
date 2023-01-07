@@ -1,7 +1,10 @@
 use crate::proc_macro::TokenStream;
 use std::fmt::Display;
 
-use super::ast_nodes::{ImplToken, StructToken};
+use super::{
+    ast_nodes::{ImplToken, StructToken},
+    fmt::fmt_lifetimes,
+};
 
 #[derive(Debug)]
 pub enum RustAST {
@@ -31,7 +34,34 @@ impl RustAST {
     }
 
     fn fmt_impl(&self, token: &ImplToken) -> String {
-        let mut code = format!("impl {}", token.name);
+        let lifetimes = if let Some(lifetimes) = &token.decl_lifetims {
+            let code = fmt_lifetimes(&lifetimes).unwrap();
+            Some(code)
+        } else {
+            None
+        };
+
+        let generics = if let Some(_) = &token.decl_generics {
+            Some("".to_owned())
+        } else {
+            None
+        };
+
+        let mut code = if lifetimes.is_some() || generics.is_some() {
+            let mut dec_generics = "<".to_owned();
+            if let Some(lifetimes) = lifetimes {
+                dec_generics += format!("{lifetimes}, ").as_str();
+            }
+            if let Some(gen) = generics {
+                dec_generics += format!("{gen}, ").as_str();
+            }
+            dec_generics = dec_generics.strip_suffix(", ").unwrap().to_owned();
+            dec_generics += ">";
+            dec_generics.to_owned()
+        } else {
+            format!("impl {}", token.name)
+        };
+
         if let Some(for_ty) = &token.for_ty {
             code += format!(" for {for_ty}").as_str();
         }

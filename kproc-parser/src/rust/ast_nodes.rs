@@ -5,7 +5,7 @@
 //! regarding the position in ostic::KDiagnostic;
 use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
 
 #[derive(Debug)]
@@ -174,6 +174,8 @@ impl AttrToken {
 
 /// AST Token to store information about an
 /// `impl` block.
+///
+/// Reference: https://doc.rust-lang.org/stable/reference/items/implementations.html
 #[derive(Debug)]
 pub struct ImplToken {
     /// declaration lifetimes, this is the
@@ -187,12 +189,12 @@ pub struct ImplToken {
     /// Stored with the following idea
     /// key:value => for the code <'a: 'static, 'b: 'a, 'c: 'a + 'b>
     /// is translated with `a:static, b:a, c:a + b`
-    pub decl_lifetims: Option<HashMap<TokenTree, Vec<TokenTree>>>,
+    pub decl_lifetims: Option<BTreeMap<TokenTree, Vec<TokenTree>>>,
     /// declaration generics, this is done when
     /// the generics are declared.
     ///
     /// This is similar to the lifetime declaration.
-    pub decl_generics: Option<HashMap<String, TokenTree>>,
+    pub decl_generics: Option<BTreeMap<String, TokenTree>>,
     /// The name of the impl Block
     pub name: TokenTree,
     /// for the type where the impl block is implemented for
