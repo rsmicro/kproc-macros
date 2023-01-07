@@ -7,6 +7,7 @@ use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::ImplToken;
 use crate::rust::core::parse_decl_generics_and_lifetime;
 
+/// helper function that allow to parse an impl block
 pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> RustAST {
     let impl_tok = ast.advance().to_owned();
     eassert_eq!(
@@ -30,6 +31,8 @@ pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> 
     } else {
         None
     };
+
+    // FIXME: parse the where clause!
 
     // store the raw content of the block because there
     // if the user want parse it,
