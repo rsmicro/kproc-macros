@@ -1,44 +1,72 @@
-//! Crate that implement all the AST nodes like
-//! struct, Fields, FielsTypes
+//! Crate that implement an abstraction of all
+//! the AST nodes like
+//! `struct`, `fields`, `FielsTypes`
 //!
 //! Each implementation contains information
-//! regarding the position in ostic::KDiagnostic;
+//! regarding the position in `KDiagnostic`.
 use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
 
+use super::fmt::fmt_lifetimes;
+
+/// Strung token that allow to
+/// decode a `struct` block.
+///
+/// Defined as described in
+/// https://doc.rust-lang.org/stable/reference/items/structs.html
+///
+// FIXME: parse and add where clause
+// FIXME: parse the TupleStruct
 #[derive(Debug)]
 pub struct StructToken {
     pub visibility: Option<TokenTree>,
     pub name: TokenTree,
     pub fields: Vec<FieldToken>,
-    pub generics: Option<StructTyToken>,
+    pub generics: Option<GenericParams>,
 }
 
+/// Generic Parameters token allow to
+/// decode stream of token defined as described
+/// in https://doc.rust-lang.org/stable/reference/items/generics.html
 #[derive(Debug)]
-pub struct StructTyToken {
-    pub lifetimes: Vec<TokenTree>,
-    pub generics: Vec<TokenTree>,
+pub struct GenericParams {
+    /// part of the impl block where the
+    /// lifetimes is stored.
+    ///
+    /// This is useful if it is needed some lookup
+    /// or implementing any smart logic with
+    /// it.
+    ///
+    /// Stored with the following idea
+    /// key:value => for the code <'a: 'static, 'b: 'a, 'c: 'a + 'b>
+    /// is translated with `a:static, b:a, c:a + b`
+    pub lifetimes: BTreeMap<TokenTree, Vec<TokenTree>>,
+    /// generics are declared.
+    ///
+    /// This is similar to the lifetime declaration.
+    pub generics: BTreeMap<TokenTree, Vec<TokenTree>>,
 }
 
-impl Display for StructTyToken {
+impl Display for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut gen = "<".to_string();
-        for lifetime in &self.lifetimes {
-            gen += format!("'{},", lifetime.to_string()).as_str();
-        }
-        // FIXME: print the generics types
-        gen = gen.strip_suffix(",").unwrap_or(&gen).to_string();
-        gen += ">";
-        write!(f, "{}", gen)
+        let mut gen = String::new();
+        gen += fmt_lifetimes(&self.lifetimes).unwrap().as_str();
+        // FIXME: missing generics formatting
+        write!(f, "<{}>", gen)
     }
 }
 
+/// struct filed token allow to decode the
+/// struct fields defined as described in
+/// https://doc.rust-lang.org/stable/reference/items/structs.html
 #[derive(Debug)]
 pub struct FieldToken {
     pub visibility: Option<TokenTree>,
     pub name: TokenTree,
+    // FIXME: convert the struct in a single
+    // type as described in https://doc.rust-lang.org/stable/reference/types.html#type-expressions
     pub ty: FieldTyToken,
     pub attrs: HashMap<String, AttrToken>,
 }
@@ -57,9 +85,12 @@ impl Display for FieldToken {
 pub struct FieldTyToken {
     pub reference: Option<TokenTree>,
     pub mutable: Option<TokenTree>,
+    // FIXME: this is a partial work, it is better
+    // to parse the lifetimes and the generics
+    // with the struct `GenericParams`.
     pub lifetime: Option<TokenTree>,
-    pub dyn_tok: Option<TokenTree>,
     pub generics: Vec<FieldTyToken>,
+    pub dyn_tok: Option<TokenTree>,
     pub name: TokenTree,
 }
 
@@ -178,23 +209,7 @@ impl AttrToken {
 /// Reference: https://doc.rust-lang.org/stable/reference/items/implementations.html
 #[derive(Debug)]
 pub struct ImplToken {
-    /// declaration lifetimes, this is the
-    /// part of the impl block where the
-    /// lifetimes is stored.
-    ///
-    /// This is useful if it is needed some lookup
-    /// or implementing any smart logic with
-    /// it.
-    ///
-    /// Stored with the following idea
-    /// key:value => for the code <'a: 'static, 'b: 'a, 'c: 'a + 'b>
-    /// is translated with `a:static, b:a, c:a + b`
-    pub decl_lifetims: Option<BTreeMap<TokenTree, Vec<TokenTree>>>,
-    /// declaration generics, this is done when
-    /// the generics are declared.
-    ///
-    /// This is similar to the lifetime declaration.
-    pub decl_generics: Option<BTreeMap<String, TokenTree>>,
+    pub generics: Option<GenericParams>,
     /// The name of the impl Block
     pub name: TokenTree,
     /// for the type where the impl block is implemented for
