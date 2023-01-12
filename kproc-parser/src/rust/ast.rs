@@ -1,11 +1,15 @@
 use crate::proc_macro::TokenStream;
+use crate::rust::ast_nodes::{ImplToken, StructToken};
+use crate::rust::fmt::fmt_lifetimes;
 use std::fmt::Display;
 
-use super::{
-    ast_nodes::{ImplToken, StructToken},
-    fmt::fmt_lifetimes,
-};
-
+/// High level `enum` that return
+/// all possible type supported from
+/// the parser.
+///
+/// This is useful in case where a
+/// procedural macro can be used
+/// in different places.
 #[derive(Debug)]
 pub enum RustAST {
     Struct(StructToken),
@@ -13,6 +17,9 @@ pub enum RustAST {
 }
 
 impl RustAST {
+    /// convert the string in a token stream, assume that
+    /// the syntax is correct, otherwise the function
+    /// will panic.
     pub fn to_token_stream(&self) -> TokenStream {
         let ast_str = self.to_string();
         println!("AST to Tokens \n\n{}", ast_str);
@@ -34,18 +41,15 @@ impl RustAST {
     }
 
     fn fmt_impl(&self, token: &ImplToken) -> String {
-        let lifetimes = if let Some(lifetimes) = &token.decl_lifetims {
-            let code = fmt_lifetimes(&lifetimes).unwrap();
-            Some(code)
-        } else {
-            None
-        };
+        let mut lifetimes: Option<String> = None;
+        let mut generics: Option<String> = None;
 
-        let generics = if let Some(_) = &token.decl_generics {
-            Some("".to_owned())
-        } else {
-            None
-        };
+        if let Some(generics) = token.generics {
+            if let Ok(fmt) = fmt_lifetimes(&generics.lifetimes) {
+                lifetimes = Some(fmt);
+            }
+            // FIXME: formatting generics
+        }
 
         let mut code = if lifetimes.is_some() || generics.is_some() {
             let mut dec_generics = "<".to_owned();

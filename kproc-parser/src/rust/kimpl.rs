@@ -16,7 +16,7 @@ pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> 
         impl_tok,
         format!("expected `impl` found `{}`", impl_tok.to_string())
     );
-    let _ = parse_decl_generics_and_lifetime(ast, tracer);
+    let generics = parse_decl_generics_and_lifetime(ast, tracer);
     let name = ast.advance().to_owned();
     let _for_ty = if ast.match_tok("for") {
         // FIXME: parsing the generic and lifetime usage
@@ -39,8 +39,7 @@ pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> 
     // it has all the necessary tools for parse it.
     let impl_block = ast.advance().to_owned();
     let impl_ast = ImplToken {
-        decl_lifetims: None,
-        decl_generics: None,
+        generics,
         name,
         // FIXME: make an abstraction for this kind of type
         for_ty: None,
