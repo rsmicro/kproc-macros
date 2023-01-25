@@ -1,14 +1,13 @@
 //! API to parse a rust `impl`
-use super::ast::RustAST;
 use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
 use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::ImplToken;
-use crate::rust::core::parse_decl_generics_and_lifetime;
+use crate::rust::core::check_and_parse_generics_params;
 
 /// helper function that allow to parse an impl block
-pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> RustAST {
+pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> ImplToken {
     let impl_tok = ast.advance().to_owned();
     eassert_eq!(
         "impl",
@@ -16,7 +15,7 @@ pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> 
         impl_tok,
         format!("expected `impl` found `{}`", impl_tok.to_string())
     );
-    let generics = parse_decl_generics_and_lifetime(ast, tracer);
+    let generics = check_and_parse_generics_params(ast, tracer);
     let name = ast.advance().to_owned();
     let _for_ty = if ast.match_tok("for") {
         // FIXME: parsing the generic and lifetime usage
@@ -38,12 +37,11 @@ pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> 
     // if the user want parse it,
     // it has all the necessary tools for parse it.
     let impl_block = ast.advance().to_owned();
-    let impl_ast = ImplToken {
+    ImplToken {
         generics,
         name,
         // FIXME: make an abstraction for this kind of type
         for_ty: None,
         impl_block,
-    };
-    RustAST::Impl(impl_ast)
+    }
 }
