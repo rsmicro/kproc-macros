@@ -5,11 +5,11 @@
 //! Each implementation contains information
 //! regarding the position in `KDiagnostic`.
 use crate::diagnostic::KDiagnostic;
+use crate::kproc_macros::OrderedTokenTree;
 use crate::proc_macro::TokenTree;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
-
-use super::fmt::fmt_lifetimes;
+use std::rc::Rc;
 
 /// Strung token that allow to
 /// decode a `struct` block.
@@ -30,30 +30,42 @@ pub struct StructToken {
 /// Generic Parameters token allow to
 /// decode stream of token defined as described
 /// in https://doc.rust-lang.org/stable/reference/items/generics.html
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GenericParams {
-    /// part of the impl block where the
-    /// lifetimes is stored.
-    ///
-    /// This is useful if it is needed some lookup
-    /// or implementing any smart logic with
-    /// it.
-    ///
-    /// Stored with the following idea
-    /// key:value => for the code <'a: 'static, 'b: 'a, 'c: 'a + 'b>
-    /// is translated with `a:static, b:a, c:a + b`
-    pub lifetimes: BTreeMap<TokenTree, Vec<TokenTree>>,
-    /// generics are declared.
-    ///
-    /// This is similar to the lifetime declaration.
-    pub generics: BTreeMap<TokenTree, Vec<TokenTree>>,
+    pub params: Vec<GenericParam>,
+}
+
+#[derive(Debug, Clone)]
+pub enum GenericParam {
+    LifetimeParam(LifetimeParam),
+    TypeParam(),
+    // FIXME: support the const params
+}
+
+#[derive(Debug, Clone)]
+pub struct LifetimeParam {
+    pub lifetime_or_label: TokenTree,
+    pub bounds: Option<TypeParamBound>,
+}
+
+#[derive(Debug, Clone)]
+pub struct TypeParam {
+    pub identifier: TokenTree,
+    pub bounds: Option<TypeParamBound>,
+    pub ty: Option<FieldTyToken>,
+}
+
+#[derive(Debug, Clone)]
+pub enum TypeParamBound {
+    Lifetime(Vec<TokenTree>),
+    // FIXME: complete this
+    TraitBound,
 }
 
 impl Display for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut gen = String::new();
-        gen += fmt_lifetimes(&self.lifetimes).unwrap().as_str();
-        // FIXME: missing generics formatting
+        let gen = String::new();
+        // FIXME: missing formatting
         write!(f, "<{}>", gen)
     }
 }
@@ -63,12 +75,12 @@ impl Display for GenericParams {
 /// https://doc.rust-lang.org/stable/reference/items/structs.html
 #[derive(Debug)]
 pub struct FieldToken {
+    pub attrs: HashMap<String, AttrToken>,
     pub visibility: Option<TokenTree>,
     pub name: TokenTree,
     // FIXME: convert the struct in a single
     // type as described in https://doc.rust-lang.org/stable/reference/types.html#type-expressions
     pub ty: FieldTyToken,
-    pub attrs: HashMap<String, AttrToken>,
 }
 
 impl Display for FieldToken {
@@ -81,17 +93,20 @@ impl Display for FieldToken {
     }
 }
 
+/// parsing the type of the filed, where this will be
+/// defined with the following grammar
+/// https://doc.rust-lang.org/stable/reference/types.html#type-expressions
+///
+// FIXME(vincenzopalazzo): I am not happy with this solution, so
+// happy to receive some feedback regarding it. In this case
+// would be good an enum or a filed regarding the kind of the type
 #[derive(Debug, Clone)]
 pub struct FieldTyToken {
     pub reference: Option<TokenTree>,
-    pub mutable: Option<TokenTree>,
-    // FIXME: this is a partial work, it is better
-    // to parse the lifetimes and the generics
-    // with the struct `GenericParams`.
-    pub lifetime: Option<TokenTree>,
-    pub generics: Vec<FieldTyToken>,
-    pub dyn_tok: Option<TokenTree>,
+    pub lifetimes: Option<BTreeMap<OrderedTokenTree, Vec<TokenTree>>>,
     pub name: TokenTree,
+    pub dyn_tok: Option<TokenTree>,
+    pub generics: Option<Rc<FieldTyToken>>,
 }
 
 impl Display for FieldTyToken {
@@ -101,26 +116,7 @@ impl Display for FieldTyToken {
             prefix += refer.to_string().as_str();
         }
 
-        // FIXME: can be more than one!
-        if let Some(lifetime) = &self.lifetime {
-            prefix += lifetime.to_string().as_str();
-        }
-
-        if let Some(mutable) = &self.mutable {
-            prefix += format!(" {mutable}").as_str();
-        }
-
-        let mut generics = "".to_owned();
-        if self.generics.len() > 0 {
-            generics += "<";
-            for generic in &self.generics {
-                generics += format!("{}, ", generic.to_string()).as_str();
-            }
-            generics = generics.strip_suffix(",").unwrap_or(&generics).to_owned();
-            generics += ">";
-        }
-
-        write!(f, "{prefix} {}{}", self.name, generics)
+        write!(f, "{prefix} {}{}", self.name, "")
     }
 }
 
