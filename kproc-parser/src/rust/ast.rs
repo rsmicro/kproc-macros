@@ -42,9 +42,9 @@ impl RustAST {
 
     fn fmt_impl(&self, token: &ImplToken) -> String {
         let mut lifetimes: Option<String> = None;
-        let mut generics: Option<String> = None;
+        let generics: Option<String> = None;
 
-        if let Some(generics) = token.generics {
+        if let Some(generics) = &token.generics {
             if let Ok(fmt) = fmt_lifetimes(&generics.lifetimes) {
                 lifetimes = Some(fmt);
             }
