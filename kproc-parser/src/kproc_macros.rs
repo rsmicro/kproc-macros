@@ -14,6 +14,18 @@ pub struct KTokenStream {
     size: usize,
 }
 
+impl From<TokenStream> for KTokenStream {
+    fn from(value: TokenStream) -> Self {
+        KTokenStream::new(&value)
+    }
+}
+
+impl From<&TokenStream> for KTokenStream {
+    fn from(value: &TokenStream) -> Self {
+        KTokenStream::new(value)
+    }
+}
+
 impl KTokenStream {
     /// create a new instance from a TokenStream
     pub fn new(tokens: &TokenStream) -> Self {

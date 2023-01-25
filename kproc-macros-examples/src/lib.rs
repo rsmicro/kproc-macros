@@ -1,8 +1,5 @@
 use kproc_parser::kparser::KParserTracer;
-use kproc_parser::kproc_macros::KTokenStream;
-use kproc_parser::proc_macro::TokenStream as TokenStreamV2;
-use kproc_parser::rust::kimpl::parse_impl;
-use kproc_parser::rust::kstruct::parse_struct;
+use kproc_parser::rust::kparser::RustParser;
 use proc_macro::TokenStream;
 
 mod gen;
@@ -20,10 +17,8 @@ impl KParserTracer for Tracer {
 #[proc_macro_derive(RustBuilder, attributes(build))]
 pub fn derive_rust(input: TokenStream) -> TokenStream {
     let tracer = Tracer {};
-    let inputv2 = TokenStreamV2::from(input);
-    let mut stream = KTokenStream::new(&inputv2);
-
-    let ast = parse_struct(&mut stream, &tracer);
+    let parser = RustParser::with_tracer(&tracer);
+    let ast = parser.parse_struct(&input);
 
     let toks = generate_impl(&ast);
     tracer.log(format!("{}", toks).as_str());
@@ -33,10 +28,9 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn derive_impl(_: TokenStream, input: TokenStream) -> TokenStream {
     let tracer = Tracer {};
-    let inputv2 = TokenStreamV2::from(input);
-    let mut stream = KTokenStream::new(&inputv2);
+    let parser = RustParser::with_tracer(&tracer);
 
-    let ast = parse_impl(&mut stream, &tracer);
+    let ast = parser.parse_impl(&input);
     tracer.log(format!("{}", ast).as_str());
-    ast.to_token_stream()
+    ast.to_string().parse().unwrap()
 }

@@ -221,6 +221,12 @@ pub struct ImplToken {
     pub impl_block: TokenTree,
 }
 
+impl Display for ImplToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
 impl KDiagnostic for StructToken {}
 impl KDiagnostic for FieldToken {}
 impl KDiagnostic for FieldTyToken {}
