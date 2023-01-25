@@ -135,3 +135,49 @@ where
 }
 
 impl MatchTok for TokenTree {}
+
+#[derive(Clone, Debug)]
+pub struct OrderedTokenTree {
+    idx: u64,
+    token: TokenTree,
+}
+
+impl OrderedTokenTree {
+    pub fn new(idx: u64, token: TokenTree) -> Self {
+        OrderedTokenTree { idx, token }
+    }
+
+    pub fn token(&self) -> TokenTree {
+        self.token.clone()
+    }
+
+    pub fn idx(&mut self, idx: u64) {
+        self.idx = idx;
+    }
+}
+
+impl From<TokenTree> for OrderedTokenTree {
+    fn from(value: TokenTree) -> Self {
+        OrderedTokenTree::new(0, value)
+    }
+}
+
+impl PartialOrd for OrderedTokenTree {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.idx.partial_cmp(&other.idx)
+    }
+}
+
+impl Ord for OrderedTokenTree {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.idx.cmp(&other.idx)
+    }
+}
+
+impl PartialEq for OrderedTokenTree {
+    fn eq(&self, other: &Self) -> bool {
+        self.idx.eq(&other.idx)
+    }
+}
+
+impl Eq for OrderedTokenTree {}
