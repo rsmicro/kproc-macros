@@ -10,7 +10,7 @@ pub fn generate_impl(struct_tok: &StructToken) -> TokenStream {
     } else {
         "".to_owned()
     };
-    let name_attr = struct_tok.fields[0].name.to_string();
+    let name_attr = &struct_tok.fields[0].identifier;
     let ty = struct_tok.fields[0].ty.to_string();
     let code = format!(
         "impl{} {}{} {{ \

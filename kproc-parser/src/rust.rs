@@ -8,3 +8,4 @@ pub mod kattr;
 pub mod kimpl;
 pub mod kparser;
 pub mod kstruct;
+pub mod ty;

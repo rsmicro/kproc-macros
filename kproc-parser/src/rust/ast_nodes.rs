@@ -5,9 +5,8 @@
 //! Each implementation contains information
 //! regarding the position in `KDiagnostic`.
 use crate::diagnostic::KDiagnostic;
-use crate::kproc_macros::OrderedTokenTree;
 use crate::proc_macro::TokenTree;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::rc::Rc;
 
@@ -38,7 +37,7 @@ pub struct GenericParams {
 #[derive(Debug, Clone)]
 pub enum GenericParam {
     LifetimeParam(LifetimeParam),
-    TypeParam(),
+    TypeParam(TyToken),
     // FIXME: support the const params
 }
 
@@ -52,7 +51,7 @@ pub struct LifetimeParam {
 pub struct TypeParam {
     pub identifier: TokenTree,
     pub bounds: Option<TypeParamBound>,
-    pub ty: Option<FieldTyToken>,
+    pub ty: Option<TyToken>,
 }
 
 #[derive(Debug, Clone)]
@@ -64,9 +63,9 @@ pub enum TypeParamBound {
 
 impl Display for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let gen = String::new();
+        let gen = "'a";
         // FIXME: missing formatting
-        write!(f, "<{}>", gen)
+        write!(f, "<{gen}>")
     }
 }
 
@@ -77,10 +76,10 @@ impl Display for GenericParams {
 pub struct FieldToken {
     pub attrs: HashMap<String, AttrToken>,
     pub visibility: Option<TokenTree>,
-    pub name: TokenTree,
+    pub identifier: TokenTree,
     // FIXME: convert the struct in a single
     // type as described in https://doc.rust-lang.org/stable/reference/types.html#type-expressions
-    pub ty: FieldTyToken,
+    pub ty: TyToken,
 }
 
 impl Display for FieldToken {
@@ -89,8 +88,30 @@ impl Display for FieldToken {
         if let Some(viss) = &self.visibility {
             vis = viss.to_string()
         }
-        write!(f, "{} {}: {}", vis, self.name, self.ty)
+        write!(f, "{} {}: {}", vis, self.identifier, self.ty)
     }
+}
+
+/// TyKidn definition for the Rust language.
+///
+/// a formal defintion of it is available at
+/// https://doc.rust-lang.org/stable/reference/types.html#type-expressions
+#[derive(Debug, Clone)]
+pub enum TyKind {
+    ImplTrait,
+    Parenthesized,
+    TraitObject,
+    TypePath,
+    TupleType,
+    NeverType,
+    RawPointerType,
+    ReferenceType,
+    ArrayType,
+    SliceType,
+    InferredType,
+    QualifiedPathInType,
+    BareFunctionType,
+    MacroInvocation,
 }
 
 /// parsing the type of the filed, where this will be
@@ -101,22 +122,23 @@ impl Display for FieldToken {
 // happy to receive some feedback regarding it. In this case
 // would be good an enum or a filed regarding the kind of the type
 #[derive(Debug, Clone)]
-pub struct FieldTyToken {
-    pub reference: Option<TokenTree>,
-    pub lifetimes: Option<BTreeMap<OrderedTokenTree, Vec<TokenTree>>>,
-    pub name: TokenTree,
+pub struct TyToken {
+    pub kind: TyKind,
+    pub ref_tok: Option<TokenTree>,
+    pub identifier: TokenTree,
     pub dyn_tok: Option<TokenTree>,
-    pub generics: Option<Rc<FieldTyToken>>,
+    pub lifetime: Option<LifetimeParam>,
+    pub generics: Vec<TyToken>,
 }
 
-impl Display for FieldTyToken {
+impl Display for TyToken {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut prefix = String::new();
-        if let Some(refer) = &self.reference {
+        if let Some(refer) = &self.ref_tok {
             prefix += refer.to_string().as_str();
         }
 
-        write!(f, "{prefix} {}{}", self.name, "")
+        write!(f, "{prefix} {}{}", self.identifier, "")
     }
 }
 
@@ -211,7 +233,7 @@ pub struct ImplToken {
     /// for the type where the impl block is implemented for
     // FIXME: we should abstract this token in a better way?
     // or just rename it?
-    pub for_ty: Option<FieldTyToken>,
+    pub for_ty: Option<TyToken>,
     /// Content of the impl block
     ///
     /// It is stored the raw block because
@@ -229,7 +251,7 @@ impl Display for ImplToken {
 
 impl KDiagnostic for StructToken {}
 impl KDiagnostic for FieldToken {}
-impl KDiagnostic for FieldTyToken {}
+impl KDiagnostic for TyToken {}
 impl KDiagnostic for AttributeToken {}
 impl KDiagnostic for CondAttributeToken {}
 impl KDiagnostic for ImplToken {}
