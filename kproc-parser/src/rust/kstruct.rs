@@ -6,7 +6,8 @@ use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
 use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
-use crate::rust::ast_nodes::{FieldToken, FieldTyToken, StructToken};
+use crate::rust::ast_nodes::{FieldToken, StructToken};
+use crate::rust::ty::parse_ty;
 use std::collections::HashMap;
 
 /// parsing a rust data structure inside a AST that will be easy to
@@ -33,12 +34,14 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
     let mut group = ast.to_ktoken_stream();
     let fields = parse_struct_fields(&mut group, tracer);
 
-    StructToken {
+    let struct_tok = StructToken {
         visibility: visibility.to_owned(),
         name,
         fields,
         generics,
-    }
+    };
+    tracer.log(format!("`parse_struct` result {:#?}", struct_tok).as_str());
+    struct_tok
 }
 
 pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
@@ -81,19 +84,13 @@ pub fn parse_struct_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Fi
         format!("expected `:` but found {}", separator)
     );
 
-    let ty = parse_field_ty(ast, tracer);
+    let ty = parse_ty(ast, tracer);
     tracer.log(format!("top type field: {}", ty).as_str());
 
     FieldToken {
         visibility: visibility.to_owned(),
-        name: field_name.to_owned(),
+        identifier: field_name.to_owned(),
         ty,
         attrs: HashMap::new(),
     }
-}
-
-/// parse the field type as an AST element.
-pub fn parse_field_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> FieldTyToken {
-    tracer.log("parsing field ty");
-    todo!()
 }

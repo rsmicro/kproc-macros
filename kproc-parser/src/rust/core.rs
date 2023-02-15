@@ -1,26 +1,41 @@
 //! Contains all the core function that are common across
 //! different modules.
-use super::ast_nodes::GenericParams;
+use super::ast_nodes::{GenericParams, LifetimeParam};
 use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
+use crate::rust::ast_nodes::GenericParam;
 
 /// parsing the declaration of the lifetimes and generics for a
 /// declaration of a impl block or struct.
 pub fn check_and_parse_generics_params(
     ast: &mut KTokenStream,
-    _: &dyn KParserTracer,
+    trace: &dyn KParserTracer,
 ) -> Option<GenericParams> {
+    trace.log("parsing generics params");
     // HERE: write the parser of this function
     // compliant to this https://doc.rust-lang.org/stable/reference/items/generics.html
     if ast.match_tok("<") {
+        ast.next(); // consume `<``
+        let mut generics = vec![];
         while !ast.match_tok(">") {
-            let _ = ast.advance();
-            // FIXME: parse the lifetime
+            trace.log(&format!("iterate over geeneric, stuck on {:?}", ast.peek()));
+            // FIXME: parse the lifetime bounds
+            if let Some(lifetime) = check_and_parse_lifetime(ast) {
+                if ast.match_tok("+") {
+                    trace.log("bouds parsing not supported");
+                } else {
+                    let param = LifetimeParam {
+                        lifetime_or_label: lifetime,
+                        bounds: None,
+                    };
+                    generics.push(GenericParam::LifetimeParam(param));
+                }
+            }
             // FIXME: parse the generics types
         }
         ast.next(); // consume the `>` toks
-        return None;
+        return Some(GenericParams { params: generics });
     }
     None
 }
