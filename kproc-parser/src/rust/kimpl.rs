@@ -4,7 +4,7 @@ use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::ImplToken;
 use crate::rust::core::check_and_parse_generics_params;
-use crate::rust::kattr::{check_and_parse_attribute, check_and_parse_cond_attribute};
+use crate::rust::kattr::check_and_parse_cond_attribute;
 
 /// helper function that allow to parse an impl block
 pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> ImplToken {
