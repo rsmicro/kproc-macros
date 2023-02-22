@@ -46,19 +46,10 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
 pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
     let mut fields = vec![];
     while !ast.is_end() {
-        let attr = if let Some(attr) = check_and_parse_cond_attribute(ast, tracer) {
-            tracer.log(format!("attribute found: {:?}", attr).as_str());
-            Some(attr)
-        } else {
-            None
-        };
+        let attr = check_and_parse_cond_attribute(ast, tracer);
         tracer.log(format!("after token {:?}", ast.peek()).as_str());
         let mut field = parse_struct_ty(ast, tracer);
-        if let Some(attr) = attr {
-            // FIXME: improve this solution, I want to search in O(1)
-            // the attribute field and had the field as well
-            field.attrs.insert(attr.name(), attr);
-        }
+        field.attrs.extend(attr);
         fields.push(field);
     }
     return fields;

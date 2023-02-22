@@ -246,6 +246,7 @@ impl AttrToken {
 /// Reference: <https://doc.rust-lang.org/stable/reference/items/implementations.html>
 #[derive(Debug)]
 pub struct ImplToken {
+    pub attributes: HashMap<String, AttrToken>,
     pub generics: Option<GenericParams>,
     /// The name of the impl Block
     pub name: TokenTree,
@@ -264,7 +265,8 @@ pub struct ImplToken {
 
 impl Display for ImplToken {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        // FIXME: print the attributes
+        write!(f, "impl {} { }", self.name, self.impl_block)
     }
 }
 

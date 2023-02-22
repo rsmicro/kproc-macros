@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
@@ -6,9 +8,10 @@ use crate::rust::ast_nodes::{AttrToken, AttributeToken, CondAttributeToken};
 pub fn check_and_parse_cond_attribute<'c>(
     ast: &'c mut KTokenStream,
     tracer: &dyn KParserTracer,
-) -> Option<AttrToken> {
+) -> HashMap<String, AttrToken> {
     tracer.log("check and parse an attribute");
     tracer.log(format!("{:?}", ast.peek()).as_str());
+    let mut attrs = HashMap::new();
     if ast.match_tok("#") {
         let _ = ast.advance();
         tracer.log(format!("{:?}", ast.peek()).as_str());
@@ -28,19 +31,20 @@ pub fn check_and_parse_cond_attribute<'c>(
                     name: name.to_owned(),
                     value: attr,
                 };
-                return Some(AttrToken::CondAttr(conf_attr));
+                attrs.insert(name.to_string(), AttrToken::CondAttr(conf_attr));
             } else {
                 // parsing the normal attribute
                 // FIXME: parse a sequence of attribute
                 if let Some(attr) = check_and_parse_attribute(&mut ast.to_ktoken_stream()) {
                     // consume group token
                     let _ = ast.advance();
-                    return Some(AttrToken::Attr(attr));
+                    attrs.insert(attr.name.to_string(), AttrToken::Attr(attr));
+                    return attrs;
                 }
             }
         }
     }
-    None
+    return attrs;
 }
 
 pub fn check_and_parse_attribute<'c>(ast: &'c mut KTokenStream) -> Option<AttributeToken> {
