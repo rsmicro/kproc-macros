@@ -232,10 +232,31 @@ pub enum AttrToken {
 }
 
 impl AttrToken {
+    // return the name of the current attribute,
+    // to inspect the value please considerer to
+    // call the `self.attribute` method.
     pub fn name(&self) -> String {
         match self {
-            AttrToken::Attr(tok) => tok.name.to_string(),
-            AttrToken::CondAttr(tok) => tok.name.to_string(),
+            Self::Attr(tok) => tok.name.to_string(),
+            Self::CondAttr(tok) => tok.name.to_string(),
+        }
+    }
+
+    /// return the attribute value in the case the item is
+    /// an attribute, or return the conditional attributes
+    /// in case the enum is `CondAttributeToken`.
+    pub fn attribute(&self) -> AttributeToken {
+        match self {
+            Self::Attr(attr) => attr.to_owned(),
+            Self::CondAttr(attr) => attr.value.clone(),
+        }
+    }
+
+    /// check is current element is an conditional item
+    pub fn is_conditional(&self) -> bool {
+        match self {
+            Self::Attr(_) => false,
+            Self::CondAttr(_) => true,
         }
     }
 }
