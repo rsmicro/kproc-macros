@@ -1,11 +1,6 @@
 //! Type parser to allow a more flexible
 //! parser.
-use proc_macro2::TokenTree;
-
 use super::ast_nodes::TyToken;
-use crate::diagnostic::KDiagnInfo;
-use crate::diagnostic::KDiagnostic;
-use crate::eassert_eq;
 use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::LifetimeParam;
