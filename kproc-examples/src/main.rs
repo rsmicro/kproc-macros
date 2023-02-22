@@ -1,3 +1,4 @@
+use kproc_macros_examples::derive_impl;
 use kproc_macros_examples::RustBuilder;
 
 trait GenTrait {}
@@ -49,12 +50,10 @@ pub struct BooComplex {
     self_ref: u32,
 }
 
-/**
 struct ForImplDerive {}
 
 #[derive_impl]
 impl ForImplDerive {}
-*/
 
 fn main() {
     let obj = Foo {
