@@ -1,6 +1,7 @@
 //! Contains all the core function that are common across
 //! different modules.
 use super::ast_nodes::{GenericParams, LifetimeParam};
+use super::ty::parse_ty;
 use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
@@ -31,6 +32,9 @@ pub fn check_and_parse_generics_params(
                     };
                     generics.push(GenericParam::LifetimeParam(param));
                 }
+            } else {
+                let ty = parse_ty(ast, trace);
+                generics.push(GenericParam::TypeParam(ty));
             }
             // FIXME: parse the generics types
         }

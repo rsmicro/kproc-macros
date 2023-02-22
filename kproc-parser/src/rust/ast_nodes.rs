@@ -6,11 +6,10 @@
 //! regarding the position in `KDiagnostic`.
 use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
-use crate::wassert;
 use std::collections::HashMap;
 use std::fmt::Display;
 
-use super::fmt::fmt_generics;
+use super::fmt::{fmt_generics, fmt_ty};
 
 /// Strung token that allow to
 /// decode a `struct` block.
@@ -78,8 +77,8 @@ pub struct TypeParam {
 #[derive(Debug, Clone)]
 pub enum TypeParamBound {
     Lifetime(Vec<TokenTree>),
-    // FIXME: complete this
     TraitBound,
+    // FIXME: complete this
 }
 
 impl std::fmt::Display for TypeParamBound {
@@ -103,8 +102,6 @@ pub struct FieldToken {
     pub attrs: HashMap<String, AttrToken>,
     pub visibility: Option<TokenTree>,
     pub identifier: TokenTree,
-    // FIXME: convert the struct in a single
-    // type as described in https://doc.rust-lang.org/stable/reference/types.html#type-expressions
     pub ty: TyToken,
 }
 
@@ -154,17 +151,13 @@ pub struct TyToken {
     pub identifier: TokenTree,
     pub dyn_tok: Option<TokenTree>,
     pub lifetime: Option<LifetimeParam>,
-    pub generics: Vec<TyToken>,
+    pub generics: Option<Vec<TyToken>>,
 }
 
 impl Display for TyToken {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut prefix = String::new();
-        if let Some(refer) = &self.ref_tok {
-            prefix += refer.to_string().as_str();
-        }
-
-        write!(f, "{prefix} {}{}", self.identifier, "")
+        let code = fmt_ty(self);
+        write!(f, "{code}")
     }
 }
 
