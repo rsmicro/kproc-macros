@@ -2,7 +2,6 @@
 //! TokenStream.
 use super::core::*;
 use super::kattr::check_and_parse_cond_attribute;
-use crate::diagnostic::{KDiagnInfo, KDiagnostic};
 use crate::eassert_eq;
 use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;

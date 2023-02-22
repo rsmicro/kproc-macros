@@ -45,6 +45,12 @@ pub fn parse_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> TyToken {
         ast.next();
     }
 
+    let generics = if generics.is_empty() {
+        None
+    } else {
+        Some(generics)
+    };
+
     TyToken {
         identifier,
         dyn_tok,
