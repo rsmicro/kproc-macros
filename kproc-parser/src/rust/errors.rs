@@ -7,6 +7,6 @@ use crate::proc_macro::TokenTree;
 
 #[derive(Debug)]
 pub struct SyntaxError {
-    tok: TokenTree,
-    msg: String,
+    pub tok: TokenTree,
+    pub msg: String,
 }

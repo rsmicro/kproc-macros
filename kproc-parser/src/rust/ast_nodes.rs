@@ -6,9 +6,11 @@
 //! regarding the position in `KDiagnostic`.
 use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
+use crate::wassert;
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::rc::Rc;
+
+use super::fmt::fmt_generics;
 
 /// Strung token that allow to
 /// decode a `struct` block.
@@ -41,10 +43,29 @@ pub enum GenericParam {
     // FIXME: support the const params
 }
 
+impl Display for GenericParam {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::LifetimeParam(param) => write!(f, "{param}"),
+            Self::TypeParam(param) => write!(f, "{param}"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct LifetimeParam {
     pub lifetime_or_label: TokenTree,
     pub bounds: Option<TypeParamBound>,
+}
+
+impl std::fmt::Display for LifetimeParam {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut code = format!("'{}", self.lifetime_or_label);
+        if let Some(bounds) = &self.bounds {
+            code += &format!(" {bounds}");
+        }
+        write!(f, "{code}")
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -61,11 +82,16 @@ pub enum TypeParamBound {
     TraitBound,
 }
 
+impl std::fmt::Display for TypeParamBound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
 impl Display for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let gen = "'a";
-        // FIXME: missing formatting
-        write!(f, "<{gen}>")
+        let gen = fmt_generics(self);
+        write!(f, "{gen}")
     }
 }
 
@@ -224,7 +250,7 @@ impl AttrToken {
 /// AST Token to store information about an
 /// `impl` block.
 ///
-/// Reference: https://doc.rust-lang.org/stable/reference/items/implementations.html
+/// Reference: <https://doc.rust-lang.org/stable/reference/items/implementations.html>
 #[derive(Debug)]
 pub struct ImplToken {
     pub generics: Option<GenericParams>,

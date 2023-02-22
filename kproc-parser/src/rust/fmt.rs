@@ -1,28 +1,14 @@
 //! formatting module that contains the basic
 //! fmt function that convert in a string
 //! part of the rust syntax.
-use crate::kproc_macros::OrderedTokenTree;
-use crate::proc_macro::TokenTree;
-use crate::rust::errors::SyntaxError;
-use std::collections::BTreeMap;
+use super::ast_nodes::GenericParams;
 
-/// format the lifetime in a string
-pub(crate) fn fmt_lifetimes(
-    lifetimes: &BTreeMap<OrderedTokenTree, Vec<TokenTree>>,
-) -> Result<String, SyntaxError> {
-    let mut code = String::new();
-    for lifetime in lifetimes.into_iter() {
-        let mut dec = lifetime.0.token().to_string();
-        let bounds = lifetime.1;
-        if !bounds.is_empty() {
-            dec += ": ";
-            for lifetime in bounds {
-                dec += format!("{lifetime} +").as_str();
-            }
-        }
-        dec = dec.strip_suffix("+").unwrap().to_owned();
-        code += format!("{dec}, ").as_str();
+pub(crate) fn fmt_generics(generics: &GenericParams) -> String {
+    let mut buff = "<".to_owned();
+    for generic in &generics.params {
+        buff += &format!("{generic}");
     }
-    code = code.strip_suffix(", ").unwrap().to_owned();
-    Ok(code)
+
+    buff += ">";
+    buff
 }
