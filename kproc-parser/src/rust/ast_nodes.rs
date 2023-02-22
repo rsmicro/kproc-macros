@@ -82,7 +82,7 @@ pub enum TypeParamBound {
 }
 
 impl std::fmt::Display for TypeParamBound {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         todo!()
     }
 }
