@@ -1,4 +1,4 @@
-use kproc_macros_examples::{derive_impl, RustBuilder};
+use kproc_macros_examples::RustBuilder;
 
 trait GenTrait {}
 
@@ -7,38 +7,49 @@ trait GenTrait {}
 pub struct Foo {
     #[build]
     attr: String,
+    #[allow(dead_code)]
     self_ref: u32,
 }
 
 #[derive(RustBuilder)]
 pub struct Boo {
+    #[allow(dead_code)]
     attr: String,
+    #[allow(dead_code)]
     self_ref: u32,
     pub gen: Vec<Foo>,
 }
 
 #[derive(RustBuilder)]
 pub struct BooLifetime<'a> {
+    #[allow(dead_code)]
     attr: String,
+    #[allow(dead_code)]
     self_ref: u32,
+    #[allow(dead_code)]
     gen: Vec<&'a Foo>,
 }
 
 #[derive(RustBuilder)]
 pub struct BooLifetimeDyn<'a> {
+    #[allow(dead_code)]
     attr: String,
+    #[allow(dead_code)]
     self_ref: u32,
+    #[allow(dead_code)]
     gen: Vec<&'a dyn GenTrait>,
 }
 
-/**
 #[derive(RustBuilder)]
 pub struct BooComplex {
     pub gen: Vec<Foo>,
+    #[allow(dead_code)]
     attr: String,
+    #[allow(dead_code)]
     self_ref: u32,
 }
 
+/**
 struct ForImplDerive {}
 
 #[derive_impl]
