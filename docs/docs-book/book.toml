@@ -1,0 +1,10 @@
+[book]
+authors = ["Vincenzo Palazzo"]
+language = "en"
+multilingual = false
+src = "src"
+title = "A day in the kproc-macro world"
+
+[build]
+build-dir = "doc-build"
+create-missing = false

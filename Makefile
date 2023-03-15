@@ -17,3 +17,9 @@ example:
 
 clean:
 	$(CC) clean
+
+book:
+	cd docs/docs-book; mdbook build
+
+dev-book:
+	cd docs/docs-book; mdbook serve --open
