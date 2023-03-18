@@ -2,6 +2,7 @@ use super::ast_nodes::{ImplToken, TraitToken};
 use super::kimpl::parse_impl;
 use super::ktrait::parse_trait;
 use super::{ast_nodes::StructToken, kstruct::parse_struct};
+use crate::kparser::KParserError;
 use crate::proc_macro::TokenStream;
 use crate::{
     kparser::{DummyTracer, KParserTracer},
@@ -31,6 +32,12 @@ impl<'tcx> RustParser<'tcx> {
 
     pub fn with_tracer(tracer: &'tcx dyn KParserTracer) -> Self {
         RustParser { tracer }
+    }
+
+    pub fn parse(&self, stream: &TokenStream) -> Result<StructToken, KParserError> {
+        // FIXME: give the possibility to check if is one
+        // of the top level struct supported.
+        unimplemented!()
     }
 
     pub fn parse_struct(&self, stream: &TokenStream) -> StructToken {
