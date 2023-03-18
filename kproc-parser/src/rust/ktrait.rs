@@ -17,7 +17,7 @@ pub fn parse_trait<'c>(
     let name = ast.advance();
     let generics = check_and_parse_generics_params(ast, tracer);
 
-    let raw_block = ast.unwrap_group();
+    let raw_block = ast.unwrap_group_as_stream();
 
     let trait_tok = TraitToken {
         visibility: vist,
@@ -25,7 +25,7 @@ pub fn parse_trait<'c>(
         generics,
         inn_attrs: None, // FIXME: parse this
         associated_items: vec![],
-        raw_block,
+        raw_block: raw_block.into(),
     };
     trace!(tracer, "trait token result: {:#?}", trait_tok);
     Ok(trait_tok)

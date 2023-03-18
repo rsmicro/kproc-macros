@@ -30,7 +30,7 @@ pub fn parse_impl<'c>(
     // store the raw content of the block because there
     // if the user want parse it,
     // it has all the necessary tools for parse it.
-    let impl_block = ast.advance().to_owned();
+    let impl_block = ast.unwrap_group_as_stream();
     trace!(tracer, "{:#?}", impl_block);
     let impl_tok = ImplToken {
         attributes: attr,
@@ -38,7 +38,7 @@ pub fn parse_impl<'c>(
         name,
         // FIXME: make an abstraction for this kind of type
         for_ty: None,
-        impl_block,
+        raw_block: impl_block.into(),
     };
     Ok(impl_tok)
 }
