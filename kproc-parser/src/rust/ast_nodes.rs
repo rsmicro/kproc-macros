@@ -4,6 +4,8 @@
 //!
 //! Each implementation contains information
 //! regarding the position in `KDiagnostic`.
+use proc_macro2::TokenStream;
+
 use crate::proc_macro::TokenTree;
 use std::collections::HashMap;
 use std::fmt::Display;
@@ -286,7 +288,7 @@ pub struct ImplToken {
     /// the kparser library expose all the primitive
     /// to parse this kind of token tree, and this
     /// will make a slim version of the library.
-    pub impl_block: TokenTree,
+    pub raw_block: TokenStream,
 }
 
 impl Default for ImplToken {
@@ -298,7 +300,7 @@ impl Default for ImplToken {
 impl Display for ImplToken {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // FIXME: print the attributes
-        write!(f, "impl {} { }", self.name, self.impl_block)
+        write!(f, "impl {} {{ {} }}", self.name, self.raw_block)
     }
 }
 
@@ -313,7 +315,7 @@ pub struct TraitToken {
     pub generics: Option<GenericParams>,
     pub inn_attrs: Option<AttrToken>,
     pub associated_items: Vec<AssociatedItem>,
-    pub raw_block: TokenTree,
+    pub raw_block: TokenStream,
 }
 
 impl Default for TraitToken {
@@ -342,7 +344,7 @@ pub struct MethodDeclTok {
     pub visibility: Option<TokenTree>,
     pub ident: TokenTree,
     pub raw_params: TokenTree,
-    pub raw_body: TokenTree,
+    pub raw_body: TokenStream,
 }
 
 /// from a parser point of view this
