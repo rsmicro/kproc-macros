@@ -1,9 +1,8 @@
 //! formatting module that contains the basic
 //! fmt function that convert in a string
 //! part of the rust syntax.
-use crate::wassert;
-
 use super::ast_nodes::{GenericParams, TyToken};
+use crate::warn;
 
 pub(crate) fn fmt_generics(generics: &GenericParams) -> String {
     let mut buff = "<".to_owned();
@@ -41,10 +40,10 @@ pub fn fmt_ty(ty: &TyToken) -> String {
         }
         postfix += ">";
     } else {
-        wassert!(
-            !["Vec"].contains(&ty.identifier.to_string().as_str()),
-            ty.identifier,
-            "the token required regenerics"
+        let ident = ty.identifier.clone();
+        warn!(
+            ["Vec"].contains(&ident.to_string().as_str()),
+            ident, "the token required generics"
         );
     }
 

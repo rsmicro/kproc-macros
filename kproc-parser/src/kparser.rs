@@ -1,5 +1,7 @@
 //! KParser tracer API
+use crate::diagnostic::KDiagnInfo;
 use crate::kproc_macros::KTokenStream;
+use crate::proc_macro::TokenTree;
 
 /// Trace Trait to inject inside the parser to keep track
 /// what the parser is doing.
@@ -15,13 +17,43 @@ impl KParserTracer for DummyTracer {
     fn log(&self, _: &str) {}
 }
 
-/// Parser trait that allow to each type to parse
-/// itself.
-pub trait KParser<T> {
-    fn parse(&self, stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> T;
+/// Generic error where with an specific
+/// token Tree and and error message that
+/// it is used to generate the diagnostic
+/// later.
+#[derive(Debug)]
+pub struct KParserError {
+    dig: KDiagnInfo,
+}
 
-    fn opt_parse(&self, stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> Option<T> {
-        let stm = self.parse(stream, tracer);
-        Some(stm)
+impl KParserError {
+    pub fn new(dig: KDiagnInfo) -> Self {
+        KParserError { dig }
     }
+
+    pub fn expect(expect_tok: &str, tok: &TokenTree) -> Result<(), KParserError> {
+        if expect_tok != &tok.to_string() {
+            let msg = format!("expected `{expect_tok}` but got `{tok}`");
+            return Err(KParserError {
+                dig: KDiagnInfo::new(&msg, tok.to_owned()),
+            });
+        }
+        Ok(())
+    }
+
+    pub fn emit(self) {
+        self.dig.emit()
+    }
+}
+
+/// KParser generic parser that it is used to
+/// parse any kind of token stream.
+pub trait KParser {
+    /// try to parse the token stream inside the type E, and if
+    /// there is no option for kparser, return an error.
+    fn parse<E>(
+        &self,
+        stream: &mut KTokenStream,
+        tracer: &dyn KParserTracer,
+    ) -> Result<E, KParserError>;
 }

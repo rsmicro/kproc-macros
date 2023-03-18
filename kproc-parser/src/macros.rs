@@ -1,48 +1,26 @@
 #[macro_export]
-macro_rules! wassert {
-    ($val:expr, $token:expr, $msg:expr) => {
-        if !$val {
-            use crate::diagnostic::{KDiagnInfo, KDiagnostic};
-            let mut data = KDiagnInfo::with_msg($msg.to_string().as_str());
-            data.with_help("This is an assert failure consider to submit a bug report");
-            $token.emit_warn(&$token, &data);
+macro_rules! check {
+    ($a:literal, $b:expr) => {
+        KParserError::expect($a, &$b)
+    };
+}
+
+#[macro_export]
+/// emit a warning when the expression
+/// is verified
+macro_rules! warn {
+    ($when: expr, $tok: expr, $($msg:tt)*) => {
+        if $when {
+            use $crate::diagnostic::KDiagnInfo;
+            let msg = format!($($msg)*);
+            KDiagnInfo::new(&msg, $tok).warn().emit()
         }
     };
 }
 
 #[macro_export]
-macro_rules! wassert_eq {
-    ($a:expr, $b:expr, $token:expr, $msg:expr) => {
-        if $a != $b {
-            use crate::diagnostic::KDiagnInfo;
-            let mut data = KDiagnInfo::with_msg($msg.to_string().as_str());
-
-            data.with_help("This is an assert failure consider to submit a bug report");
-            $token.emit_warn(&$token, &data);
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! eassert {
-    ($val:expr, $token:item, $msg:literal) => {
-        if !$val {
-            use crate::diagnostic::KDiagnInfo;
-            let mut data = KDiagnInfo::with_msg($msg.to_string().as_str());
-            data.with_help("This is an assert failure consider to submit a bug report");
-            $token.emit_error(&$token, &data);
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! eassert_eq {
-    ($a:expr, $b:expr, $token:expr, $msg:expr) => {
-        if $a != $b {
-            use crate::diagnostic::{KDiagnInfo, KDiagnostic};
-            let mut data = KDiagnInfo::with_msg($msg.to_string().as_str());
-            data.with_help("This is an assert failure consider to submit a bug report");
-            $token.emit_error(&$token, &data);
-        }
+macro_rules! trace {
+    ($trace:expr, $($msg:tt)*) => {
+        $trace.log(&format!($($msg)*))
     };
 }

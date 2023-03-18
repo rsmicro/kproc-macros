@@ -49,12 +49,12 @@ impl KTokenStream {
 
     /// advance the position and return the previous element
     /// in position - 1
-    pub fn advance(&mut self) -> &TokenTree {
+    pub fn advance(&mut self) -> TokenTree {
         self.next();
         if self.is_end() {
-            return &self.kstream.last().unwrap();
+            return self.kstream.last().unwrap().to_owned();
         }
-        self.prev()
+        self.prev().to_owned()
     }
 
     /// perform a search operation inside the stream by a number
