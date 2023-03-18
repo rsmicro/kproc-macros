@@ -87,6 +87,18 @@ pub fn check_and_parse_dyn<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
     }
 }
 
+#[macro_export]
+macro_rules! parse_visibility {
+    ($ast:expr) => {{
+        if let Some(vs) = $crate::rust::core::check_and_parse_visibility($ast) {
+            let res = Some(vs.clone());
+            $ast.next();
+            res
+        } else {
+            None
+        }
+    }};
+}
 /// parse visibility identifier like `pub(crate)`` and return an option
 /// value in case it is not defined.
 pub fn check_and_parse_visibility<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {

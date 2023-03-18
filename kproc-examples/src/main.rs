@@ -1,3 +1,4 @@
+use kproc_macros_examples::default_impl;
 use kproc_macros_examples::derive_impl;
 use kproc_macros_examples::RustBuilder;
 
@@ -54,6 +55,15 @@ struct ForImplDerive {}
 
 #[derive_impl]
 impl ForImplDerive {}
+
+#[default_impl]
+trait Seq<T> {
+    fn len(&self) -> u32;
+    fn elt_at(&self, n: u32) -> T;
+    fn iter<F>(&self, f: F)
+    where
+        F: Fn(T);
+}
 
 fn main() {
     let obj = Foo {
