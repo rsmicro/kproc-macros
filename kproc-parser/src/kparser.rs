@@ -31,6 +31,11 @@ impl KParserError {
         KParserError { dig }
     }
 
+    pub fn with_msg(tok: TokenTree, msg: &str) -> Self {
+        let diag = KDiagnInfo::new(msg, tok);
+        Self::new(diag)
+    }
+
     pub fn expect(expect_tok: &str, tok: &TokenTree) -> Result<(), KParserError> {
         if expect_tok != &tok.to_string() {
             let msg = format!("expected `{expect_tok}` but got `{tok}`");

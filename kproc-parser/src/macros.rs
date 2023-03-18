@@ -21,10 +21,19 @@ macro_rules! warn {
 #[macro_export]
 /// emit a compiler error
 macro_rules! error {
-    ($when: expr, $tok: expr, $($msg:tt)*) => {{
+    ($tok: expr, $($msg:tt)*) => {{
         use $crate::diagnostic::KDiagnInfo;
         let msg = format!($($msg)*);
         KDiagnInfo::new(&msg, $tok).emit()
+    }};
+}
+
+#[macro_export]
+/// emit a compiler error
+macro_rules! build_error {
+    ($tok: expr, $($msg:tt)*) => {{
+        let msg = format!($($msg)*);
+        KParserError::with_msg($tok, &msg)
     }};
 }
 
