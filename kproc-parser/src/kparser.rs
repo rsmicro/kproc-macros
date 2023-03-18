@@ -49,6 +49,10 @@ impl KParserError {
     pub fn emit(self) {
         self.dig.emit()
     }
+
+    pub fn span(&self) -> TokenTree {
+        self.dig.span()
+    }
 }
 
 /// KParser generic parser that it is used to

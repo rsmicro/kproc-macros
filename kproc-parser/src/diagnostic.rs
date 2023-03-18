@@ -18,6 +18,10 @@ impl KDiagnInfo {
         }
     }
 
+    pub fn span(&self) -> TokenTree {
+        self.tok.clone()
+    }
+
     pub fn help(mut self, msg: &str) -> Self {
         self.help = Some(msg.to_owned());
         self

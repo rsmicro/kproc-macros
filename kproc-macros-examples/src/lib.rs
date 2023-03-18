@@ -40,6 +40,6 @@ pub fn default_impl(_: TokenStream, input: TokenStream) -> TokenStream {
     let tracer = Tracer {};
     let parsr = RustParser::with_tracer(&tracer);
 
-    let _ = parsr.parser_trait(&input);
+    let _ = parsr.parse_trait(&input);
     input
 }
