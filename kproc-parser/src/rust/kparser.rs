@@ -1,9 +1,10 @@
-use super::ast_nodes::{ImplToken, TraitToken};
+use super::ast_nodes::{ImplToken, TopLevelNode, TraitToken};
 use super::kimpl::parse_impl;
 use super::ktrait::parse_trait;
 use super::{ast_nodes::StructToken, kstruct::parse_struct};
 use crate::kparser::KParserError;
 use crate::proc_macro::TokenStream;
+use crate::{build_error, trace};
 use crate::{
     kparser::{DummyTracer, KParserTracer},
     kproc_macros::KTokenStream,
@@ -34,10 +35,28 @@ impl<'tcx> RustParser<'tcx> {
         RustParser { tracer }
     }
 
-    pub fn parse(&self, stream: &TokenStream) -> Result<StructToken, KParserError> {
-        // FIXME: give the possibility to check if is one
-        // of the top level struct supported.
-        unimplemented!()
+    pub fn parse(&self, stream: &TokenStream) -> Result<TopLevelNode, KParserError> {
+        let mut ast = KTokenStream::new(stream);
+        let first = ast.peek().clone();
+        if let Ok(tok) = parse_struct(&mut ast, self.tracer) {
+            return Ok(tok.into());
+        } else {
+            trace!(self.tracer, "error fom `parse_struct`");
+        }
+
+        let mut ast = KTokenStream::new(stream);
+        if let Ok(tok) = parse_impl(&mut ast, self.tracer) {
+            return Ok(tok.into());
+        } else {
+            trace!(self.tracer, "error fro `parse_impl`");
+        }
+
+        let mut ast = KTokenStream::new(stream);
+        if let Ok(tok) = parse_trait(&mut ast, self.tracer) {
+            return Ok(tok.into());
+        }
+        let err = build_error!(first, "Token Stream sequence not known");
+        Err(err)
     }
 
     pub fn parse_struct(&self, stream: &TokenStream) -> StructToken {
@@ -52,7 +71,7 @@ impl<'tcx> RustParser<'tcx> {
         unwrap!(result, ImplToken::default())
     }
 
-    pub fn parser_trait(&self, stream: &TokenStream) -> TraitToken {
+    pub fn parse_trait(&self, stream: &TokenStream) -> TraitToken {
         let mut stram = KTokenStream::from(stream);
         let result = parse_trait(&mut stram, self.tracer);
         unwrap!(result, TraitToken::default())

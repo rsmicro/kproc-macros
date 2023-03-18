@@ -2,7 +2,7 @@
 //! produce a convenient AST by including only the
 //! necessary code.
 #![feature(proc_macro_diagnostic)]
-mod diagnostic;
+pub mod diagnostic;
 pub mod kparser;
 pub mod kproc_macros;
 pub mod macros;

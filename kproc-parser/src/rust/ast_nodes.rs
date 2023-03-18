@@ -4,13 +4,72 @@
 //!
 //! Each implementation contains information
 //! regarding the position in `KDiagnostic`.
-use proc_macro2::TokenStream;
+use crate::proc_macro::TokenStream;
 
-use crate::proc_macro::TokenTree;
+use crate::{
+    kparser::{DummyTracer, KParserError},
+    kproc_macros::KTokenStream,
+    proc_macro::TokenTree,
+};
 use std::collections::HashMap;
 use std::fmt::Display;
 
-use super::fmt::{fmt_generics, fmt_ty};
+use super::{
+    fmt::{fmt_generics, fmt_ty},
+    kimpl::parse_impl,
+    kstruct::parse_struct,
+    ktrait::parse_trait,
+};
+
+pub trait TopLevelAST {
+    fn span(&self) -> TokenTree;
+
+    fn is_trait(&self) -> bool {
+        false
+    }
+
+    fn is_struct(&self) -> bool {
+        false
+    }
+
+    fn is_impl(&self) -> bool {
+        false
+    }
+}
+
+pub enum TopLevelNode {
+    Struct(StructToken),
+    Trait(TraitToken),
+    Impl(ImplToken),
+}
+
+impl Display for TopLevelNode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Impl(node) => write!(f, "{node}"),
+            Self::Struct(node) => write!(f, "{node}"),
+            Self::Trait(node) => write!(f, "{node}"),
+        }
+    }
+}
+
+impl From<StructToken> for TopLevelNode {
+    fn from(value: StructToken) -> Self {
+        TopLevelNode::Struct(value)
+    }
+}
+
+impl From<ImplToken> for TopLevelNode {
+    fn from(value: ImplToken) -> Self {
+        TopLevelNode::Impl(value)
+    }
+}
+
+impl From<TraitToken> for TopLevelNode {
+    fn from(value: TraitToken) -> Self {
+        TopLevelNode::Trait(value)
+    }
+}
 
 /// Strung token that allow to
 /// decode a `struct` block.
@@ -28,9 +87,34 @@ pub struct StructToken {
     pub generics: Option<GenericParams>,
 }
 
+impl TopLevelAST for StructToken {
+    fn span(&self) -> TokenTree {
+        self.name.clone()
+    }
+
+    fn is_struct(&self) -> bool {
+        true
+    }
+}
+
 impl Default for StructToken {
     fn default() -> Self {
         panic!()
+    }
+}
+
+impl TryFrom<&TokenStream> for StructToken {
+    type Error = KParserError;
+
+    fn try_from(value: &TokenStream) -> Result<Self, Self::Error> {
+        let mut stream = KTokenStream::new(&value);
+        parse_struct(&mut stream, &DummyTracer {})
+    }
+}
+
+impl Display for StructToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "")
     }
 }
 
@@ -291,6 +375,25 @@ pub struct ImplToken {
     pub raw_block: TokenStream,
 }
 
+impl TopLevelAST for ImplToken {
+    fn span(&self) -> TokenTree {
+        self.name.clone()
+    }
+
+    fn is_impl(&self) -> bool {
+        true
+    }
+}
+
+impl TryFrom<&TokenStream> for ImplToken {
+    type Error = KParserError;
+
+    fn try_from(value: &TokenStream) -> Result<Self, Self::Error> {
+        let mut stream = KTokenStream::new(value);
+        parse_impl(&mut stream, &DummyTracer {})
+    }
+}
+
 impl Default for ImplToken {
     fn default() -> Self {
         panic!()
@@ -318,9 +421,34 @@ pub struct TraitToken {
     pub raw_block: TokenStream,
 }
 
+impl TopLevelAST for TraitToken {
+    fn span(&self) -> TokenTree {
+        self.ident.clone()
+    }
+
+    fn is_trait(&self) -> bool {
+        true
+    }
+}
+
+impl TryFrom<&TokenStream> for TraitToken {
+    type Error = KParserError;
+
+    fn try_from(value: &TokenStream) -> Result<Self, Self::Error> {
+        let mut stream = KTokenStream::new(value);
+        parse_trait(&mut stream, &DummyTracer {})
+    }
+}
+
 impl Default for TraitToken {
     fn default() -> Self {
         panic!()
+    }
+}
+
+impl Display for TraitToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "")
     }
 }
 
