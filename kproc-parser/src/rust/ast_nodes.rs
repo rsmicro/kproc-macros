@@ -4,7 +4,6 @@
 //!
 //! Each implementation contains information
 //! regarding the position in `KDiagnostic`.
-use crate::diagnostic::KDiagnostic;
 use crate::proc_macro::TokenTree;
 use std::collections::HashMap;
 use std::fmt::Display;
@@ -25,6 +24,12 @@ pub struct StructToken {
     pub name: TokenTree,
     pub fields: Vec<FieldToken>,
     pub generics: Option<GenericParams>,
+}
+
+impl Default for StructToken {
+    fn default() -> Self {
+        panic!()
+    }
 }
 
 /// Generic Parameters token allow to
@@ -284,16 +289,15 @@ pub struct ImplToken {
     pub impl_block: TokenTree,
 }
 
+impl Default for ImplToken {
+    fn default() -> Self {
+        panic!()
+    }
+}
+
 impl Display for ImplToken {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // FIXME: print the attributes
         write!(f, "impl {} { }", self.name, self.impl_block)
     }
 }
-
-impl KDiagnostic for StructToken {}
-impl KDiagnostic for FieldToken {}
-impl KDiagnostic for TyToken {}
-impl KDiagnostic for AttributeToken {}
-impl KDiagnostic for CondAttributeToken {}
-impl KDiagnostic for ImplToken {}

@@ -1,32 +1,25 @@
 //! API to parse a rust `impl`
-use crate::eassert_eq;
-use crate::kparser::KParserTracer;
+use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::ImplToken;
 use crate::rust::core::check_and_parse_generics_params;
 use crate::rust::kattr::check_and_parse_cond_attribute;
+use crate::{check, trace};
 
 /// helper function that allow to parse an impl block
-pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> ImplToken {
+pub fn parse_impl<'c>(
+    ast: &'c mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> Result<ImplToken, KParserError> {
     let attr = check_and_parse_cond_attribute(ast, tracer);
-    let impl_tok = ast.advance().to_owned();
-    eassert_eq!(
-        "impl",
-        impl_tok.to_string(),
-        impl_tok,
-        format!("expected `impl` found `{}`", impl_tok.to_string())
-    );
+    let impl_tok = ast.advance();
+    check!("impl", impl_tok)?;
     let generics = check_and_parse_generics_params(ast, tracer);
-    let name = ast.advance().to_owned();
+    let name = ast.advance();
     let _for_ty = if ast.match_tok("for") {
         // FIXME: parsing the generic and lifetime usage
-        let for_tok = ast.advance().to_owned();
-        eassert_eq!(
-            "for",
-            for_tok.to_string(),
-            for_tok,
-            format!("expected `for` found `{}`", for_tok.to_owned())
-        );
+        let for_tok = ast.advance();
+        check!("for", for_tok)?;
         Some(ast.advance())
     } else {
         None
@@ -38,13 +31,14 @@ pub fn parse_impl<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> 
     // if the user want parse it,
     // it has all the necessary tools for parse it.
     let impl_block = ast.advance().to_owned();
-    tracer.log(&format!("{:#?}", impl_block));
-    ImplToken {
+    trace!(tracer, "{:#?}", impl_block);
+    let impl_tok = ImplToken {
         attributes: attr,
         generics,
         name,
         // FIXME: make an abstraction for this kind of type
         for_ty: None,
         impl_block,
-    }
+    };
+    Ok(impl_tok)
 }

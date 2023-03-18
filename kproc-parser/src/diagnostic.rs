@@ -1,59 +1,54 @@
-use crate::proc_macro::{Diagnostic, TokenTree};
+use crate::proc_macro::TokenTree;
 
+#[derive(Debug, Clone)]
 pub struct KDiagnInfo {
-    msg: Option<String>,
+    tok: TokenTree,
+    msg: String,
     help: Option<String>,
+    war: bool,
 }
 
 impl KDiagnInfo {
-    #[allow(dead_code)]
-    pub fn new(msg: &str, help: &str) -> Self {
+    pub fn new(msg: &str, tok: TokenTree) -> Self {
         KDiagnInfo {
-            msg: Some(msg.to_owned()),
-            help: Some(help.to_owned()),
-        }
-    }
-
-    pub fn with_msg(msg: &str) -> Self {
-        KDiagnInfo {
-            msg: Some(msg.to_owned()),
+            msg: msg.to_owned(),
             help: None,
+            tok,
+            war: false,
         }
     }
 
-    pub fn with_help(&mut self, msg: &str) {
-        self.help = Some(msg.to_owned())
+    pub fn help(mut self, msg: &str) -> Self {
+        self.help = Some(msg.to_owned());
+        self
+    }
+
+    pub fn warn(mut self) -> Self {
+        self.war = true;
+        self
+    }
+
+    pub fn emit(self) {
+        if self.war {
+            self.clone().emit_warn();
+            return;
+        }
+        self.emit_error()
+    }
+
+    pub fn emit_error(self) {
+        let mut diag = self.tok.span().error(self.msg);
+        if let Some(help) = self.help {
+            diag = diag.help(help);
+        }
+        diag.emit()
+    }
+
+    pub fn emit_warn(self) {
+        let mut diag = self.tok.span().warning(self.msg);
+        if let Some(help) = self.help {
+            diag = diag.help(help);
+        }
+        diag.emit()
     }
 }
-
-pub trait KDiagnostic {
-    fn emit_error_on_token(&self, token: &TokenTree, msg: &str) -> Diagnostic {
-        token.span().error(msg)
-    }
-
-    fn emit_warning_on_token(&self, token: &TokenTree, msg: &str) -> Diagnostic {
-        token.span().warning(msg)
-    }
-
-    fn emit_error(&self, token: &TokenTree, data: &KDiagnInfo) {
-        if let Some(msg) = &data.msg {
-            let mut diag = self.emit_error_on_token(token, msg.as_str());
-            if let Some(help) = &data.help {
-                diag = diag.help(help);
-            }
-            diag.emit()
-        }
-    }
-
-    fn emit_warn(&self, token: &TokenTree, data: &KDiagnInfo) {
-        if let Some(msg) = &data.msg {
-            let mut diag = self.emit_warning_on_token(token, msg.as_str());
-            if let Some(help) = &data.help {
-                diag = diag.help(help);
-            }
-            diag.emit()
-        }
-    }
-}
-
-impl KDiagnostic for TokenTree {}

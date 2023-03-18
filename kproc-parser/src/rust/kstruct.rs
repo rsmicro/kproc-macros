@@ -1,17 +1,22 @@
 //! API to parse the rust struct provided as
 //! TokenStream.
-use super::core::*;
-use super::kattr::check_and_parse_cond_attribute;
-use crate::eassert_eq;
-use crate::kparser::KParserTracer;
+use std::collections::HashMap;
+
+use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::{FieldToken, StructToken};
 use crate::rust::ty::parse_ty;
-use std::collections::HashMap;
+use crate::{check, trace};
+
+use super::core::*;
+use super::kattr::check_and_parse_cond_attribute;
 
 /// parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
-pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -> StructToken {
+pub fn parse_struct<'c>(
+    ast: &'c mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> Result<StructToken, KParserError> {
     let visibility = if let Some(vs) = check_and_parse_visibility(ast) {
         let res = Some(vs.clone());
         ast.next();
@@ -19,43 +24,45 @@ pub fn parse_struct<'c>(ast: &'c mut KTokenStream, tracer: &dyn KParserTracer) -
     } else {
         None
     };
-    let tok = ast.advance().to_owned();
-    eassert_eq!(
-        "struct",
-        tok.to_string(),
-        tok,
-        format!("expected struct keyword found {}", tok)
-    );
-    let name = ast.advance().to_owned();
+    let tok = ast.advance();
+    check!("struct", tok)?;
+
+    let name = ast.advance();
     let generics = check_and_parse_generics_params(ast, tracer);
-    tracer.log(format!("Struct generics ty: {:?}", generics).as_str());
+    trace!(tracer, "Struct generics ty: {:?}", generics);
 
     let mut group = ast.to_ktoken_stream();
-    let fields = parse_struct_fields(&mut group, tracer);
+    let fields = parse_struct_fields(&mut group, tracer)?;
 
     let struct_tok = StructToken {
-        visibility: visibility.to_owned(),
+        visibility,
         name,
         fields,
         generics,
     };
-    tracer.log(format!("`parse_struct` result {:#?}", struct_tok).as_str());
-    struct_tok
+    trace!(tracer, "`parse_struct` result {:#?}", struct_tok);
+    Ok(struct_tok)
 }
 
-pub fn parse_struct_fields(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Vec<FieldToken> {
+pub fn parse_struct_fields(
+    ast: &mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> Result<Vec<FieldToken>, KParserError> {
     let mut fields = vec![];
     while !ast.is_end() {
         let attr = check_and_parse_cond_attribute(ast, tracer);
-        tracer.log(format!("after token {:?}", ast.peek()).as_str());
-        let mut field = parse_struct_ty(ast, tracer);
+        trace!(tracer, "after token {:?}", ast.peek());
+        let mut field = parse_struct_ty(ast, tracer)?;
         field.attrs.extend(attr);
         fields.push(field);
     }
-    return fields;
+    Ok(fields)
 }
 
-pub fn parse_struct_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> FieldToken {
+pub fn parse_struct_ty(
+    ast: &mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> Result<FieldToken, KParserError> {
     // name filed
     let visibility = if let Some(vs) = check_and_parse_visibility(ast) {
         let res = Some(vs.clone());
@@ -64,23 +71,18 @@ pub fn parse_struct_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> Fi
     } else {
         None
     };
-    let field_name = ast.advance().to_owned();
-    // : separator
-    let separator = ast.advance().clone();
-    eassert_eq!(
-        ":",
-        separator.to_string(),
-        separator,
-        format!("expected `:` but found {}", separator)
-    );
+    let field_name = ast.advance();
+    let separator = ast.advance();
+    check!(":", separator)?;
 
     let ty = parse_ty(ast, tracer);
-    tracer.log(format!("top type field: {}", ty).as_str());
+    trace!(tracer, "top type field: {ty}");
 
-    FieldToken {
-        visibility: visibility.to_owned(),
-        identifier: field_name.to_owned(),
+    let field = FieldToken {
+        visibility,
+        identifier: field_name,
         ty,
         attrs: HashMap::new(),
-    }
+    };
+    Ok(field)
 }
