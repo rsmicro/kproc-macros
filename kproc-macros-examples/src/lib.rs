@@ -9,7 +9,7 @@ struct Tracer;
 
 impl KParserTracer for Tracer {
     fn log(&self, msg: &str) {
-        eprintln!("{msg}");
+        eprintln!("\x1b[93mkproc-tracing\x1b[1;97m {msg}");
     }
 }
 
@@ -33,4 +33,13 @@ pub fn derive_impl(_: TokenStream, input: TokenStream) -> TokenStream {
     let ast = parser.parse_impl(&input);
     tracer.log(format!("{}", ast).as_str());
     ast.to_string().parse().unwrap()
+}
+
+#[proc_macro_attribute]
+pub fn default_impl(_: TokenStream, input: TokenStream) -> TokenStream {
+    let tracer = Tracer {};
+    let parsr = RustParser::with_tracer(&tracer);
+
+    let _ = parsr.parser_trait(&input);
+    input
 }

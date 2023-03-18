@@ -6,7 +6,7 @@ use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::{FieldToken, StructToken};
 use crate::rust::ty::parse_ty;
-use crate::{check, trace};
+use crate::{check, parse_visibility, trace};
 
 use super::core::*;
 use super::kattr::check_and_parse_cond_attribute;
@@ -17,13 +17,7 @@ pub fn parse_struct<'c>(
     ast: &'c mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> Result<StructToken, KParserError> {
-    let visibility = if let Some(vs) = check_and_parse_visibility(ast) {
-        let res = Some(vs.clone());
-        ast.next();
-        res
-    } else {
-        None
-    };
+    let visibility = parse_visibility!(ast);
     let tok = ast.advance();
     check!("struct", tok)?;
 

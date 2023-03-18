@@ -301,3 +301,51 @@ impl Display for ImplToken {
         write!(f, "impl {} { }", self.name, self.impl_block)
     }
 }
+
+/// AST token to store information about a
+/// `Trait`.
+///
+/// Reference <https://doc.rust-lang.org/stable/reference/items/traits.html>
+#[derive(Debug)]
+pub struct TraitToken {
+    pub visibility: Option<TokenTree>,
+    pub ident: TokenTree,
+    pub generics: Option<GenericParams>,
+    pub inn_attrs: Option<AttrToken>,
+    pub associated_items: Vec<AssociatedItem>,
+    pub raw_block: TokenTree,
+}
+
+impl Default for TraitToken {
+    fn default() -> Self {
+        panic!()
+    }
+}
+
+/// Enum that contans all the Associated Items
+/// supported by the parser.
+///
+/// Reference <https://doc.rust-lang.org/stable/reference/items/associated-items.html>
+#[derive(Debug)]
+pub enum AssociatedItem {
+    AssociatedFn(FnDeclTok),
+    AssociatedMethod(MethodDeclTok),
+    // FIXME: add the other associatedItems missing
+}
+
+/// AST token to store the information about the
+/// a function or method declaration
+///
+/// Reference <https://doc.rust-lang.org/stable/reference/items/functions.html>
+#[derive(Debug)]
+pub struct MethodDeclTok {
+    pub visibility: Option<TokenTree>,
+    pub ident: TokenTree,
+    pub raw_params: TokenTree,
+    pub raw_body: TokenTree,
+}
+
+/// from a parser point of view this
+/// should not change much because it is
+/// missing just a self param
+pub type FnDeclTok = MethodDeclTok;

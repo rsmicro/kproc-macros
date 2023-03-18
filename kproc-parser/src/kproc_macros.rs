@@ -117,6 +117,13 @@ impl KTokenStream {
         }
     }
 
+    pub fn unwrap_group(&self) -> TokenTree {
+        match self.peek() {
+            TokenTree::Group(_) => self.peek().clone(),
+            _ => panic!("the token {} is not a `TokenTree::Group`", self.peek()),
+        }
+    }
+
     /// check if the current token is a `TokenTree::Group`
     pub fn is_group(&self) -> bool {
         match self.peek() {
