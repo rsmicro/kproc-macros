@@ -44,3 +44,12 @@ pub fn default_impl(_: TokenStream, input: TokenStream) -> TokenStream {
     let _ = parsr.parse_trait(&input);
     input
 }
+
+#[proc_macro_attribute]
+pub fn derive_fn(_: TokenStream, input: TokenStream) -> TokenStream {
+    let tracer = Tracer {};
+    let parser = RustParser::with_tracer(&tracer);
+    let ast = parser.parse_fn(&input);
+    trace!(tracer, "function AST: {:#?}", ast);
+    input
+}

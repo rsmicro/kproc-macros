@@ -1,4 +1,7 @@
-use super::ast_nodes::{ImplToken, TopLevelNode, TraitToken};
+use std::result;
+
+use super::ast_nodes::{ImplToken, MethodDeclToken, TopLevelNode, TraitToken};
+use super::kfunc::parse_fn;
 use super::kimpl::parse_impl;
 use super::ktrait::parse_trait;
 use super::{ast_nodes::StructToken, kstruct::parse_struct};
@@ -55,6 +58,11 @@ impl<'tcx> RustParser<'tcx> {
         if let Ok(tok) = parse_trait(&mut ast, self.tracer) {
             return Ok(tok.into());
         }
+
+        let mut ast = KTokenStream::new(stream);
+        if let Ok(tok) = parse_fn(&mut ast, self.tracer) {
+            return Ok(tok.into());
+        }
         let err = build_error!(first, "Token Stream sequence not known");
         Err(err)
     }
@@ -75,5 +83,11 @@ impl<'tcx> RustParser<'tcx> {
         let mut stram = KTokenStream::from(stream);
         let result = parse_trait(&mut stram, self.tracer);
         unwrap!(result, TraitToken::default())
+    }
+
+    pub fn parse_fn(&self, stream: &TokenStream) -> MethodDeclToken {
+        let mut stream = KTokenStream::from(stream);
+        let result = parse_fn(&mut stream, self.tracer);
+        unwrap!(result, MethodDeclToken::default())
     }
 }

@@ -35,12 +35,17 @@ pub trait TopLevelAST {
     fn is_impl(&self) -> bool {
         false
     }
+
+    fn is_fn(&self) -> bool {
+        false
+    }
 }
 
 pub enum TopLevelNode {
     Struct(StructToken),
     Trait(TraitToken),
     Impl(ImplToken),
+    Fn(MethodDeclToken),
 }
 
 impl Display for TopLevelNode {
@@ -49,6 +54,7 @@ impl Display for TopLevelNode {
             Self::Impl(node) => write!(f, "{node}"),
             Self::Struct(node) => write!(f, "{node}"),
             Self::Trait(node) => write!(f, "{node}"),
+            Self::Fn(node) => write!(f, "{node}"),
         }
     }
 }
@@ -68,6 +74,12 @@ impl From<ImplToken> for TopLevelNode {
 impl From<TraitToken> for TopLevelNode {
     fn from(value: TraitToken) -> Self {
         TopLevelNode::Trait(value)
+    }
+}
+
+impl From<MethodDeclToken> for TopLevelNode {
+    fn from(value: MethodDeclToken) -> Self {
+        TopLevelNode::Fn(value)
     }
 }
 
@@ -480,6 +492,28 @@ pub struct MethodDeclToken {
     pub generics: Option<GenericParams>,
     pub raw_params: TokenStream,
     pub raw_body: Option<TokenStream>,
+}
+
+impl Default for MethodDeclToken {
+    fn default() -> Self {
+        unimplemented!()
+    }
+}
+
+impl Display for MethodDeclToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "")
+    }
+}
+
+impl TopLevelAST for MethodDeclToken {
+    fn span(&self) -> TokenTree {
+        self.ident.clone()
+    }
+
+    fn is_fn(&self) -> bool {
+        true
+    }
 }
 
 /// from a parser point of view this
