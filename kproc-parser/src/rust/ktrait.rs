@@ -1,6 +1,7 @@
 use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::rust::core::*;
+use crate::rust::kfunc::parse_fn;
 use crate::{check, parse_visibility, trace};
 
 use super::ast_nodes::TraitToken;
@@ -18,6 +19,15 @@ pub fn parse_trait<'c>(
     let generics = check_and_parse_generics_params(ast, tracer);
 
     let raw_block = ast.unwrap_group_as_stream();
+    let mut block = ast.to_ktoken_stream();
+
+    let mut funs = Vec::new();
+    while !block.is_end() {
+        // FIXME we Suppose to have all the function and no
+        // extra stuff
+        let fn_tok = parse_fn(&mut block, tracer)?;
+        funs.push(fn_tok);
+    }
 
     let trait_tok = TraitToken {
         visibility: vist,
@@ -26,6 +36,7 @@ pub fn parse_trait<'c>(
         inn_attrs: None, // FIXME: parse this
         associated_items: vec![],
         raw_block: raw_block.into(),
+        functions: funs,
     };
     trace!(tracer, "trait token result: {:#?}", trait_tok);
     Ok(trait_tok)

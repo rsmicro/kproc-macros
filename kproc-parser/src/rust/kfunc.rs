@@ -2,7 +2,7 @@
 //! parse the function like rust syntax.
 use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
-use crate::rust::core::check_and_parse_return_type;
+use crate::rust::core::{check_and_parse_generics_params, check_and_parse_return_type};
 use crate::{check, parse_visibility, trace};
 
 use super::ast_nodes::MethodDeclToken;
@@ -47,7 +47,7 @@ pub fn parse_fn<'c>(
         "function name {ident} and next tok: {:#?}",
         toks.peek()
     );
-    // FIXME: check and parse generics
+    let generics = check_and_parse_generics_params(toks, tracer);
     let params = toks.unwrap_group_as_stream();
     toks.next();
     // FIXME: parse where clouse
@@ -58,13 +58,21 @@ pub fn parse_fn<'c>(
         rt_ty,
         toks.peek()
     );
-    let body = toks.unwrap_group_as_stream();
-    toks.next();
+    let body = if toks.is_group() {
+        let body = toks.unwrap_group_as_stream();
+        toks.next();
+        Some(body)
+    } else {
+        let toks = toks.advance();
+        check!(";", toks)?;
+        None
+    };
 
     let method = MethodDeclToken {
         visibility,
         qualifier,
         ident,
+        generics,
         raw_params: params,
         raw_body: body,
     };

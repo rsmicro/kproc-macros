@@ -420,6 +420,7 @@ pub struct TraitToken {
     pub inn_attrs: Option<AttrToken>,
     pub associated_items: Vec<AssociatedItem>,
     pub raw_block: TokenStream,
+    pub functions: Vec<MethodDeclToken>,
 }
 
 impl TopLevelAST for TraitToken {
@@ -476,8 +477,9 @@ pub struct MethodDeclToken {
     // specified.
     pub qualifier: Option<TokenTree>,
     pub ident: TokenTree,
+    pub generics: Option<GenericParams>,
     pub raw_params: TokenStream,
-    pub raw_body: TokenStream,
+    pub raw_body: Option<TokenStream>,
 }
 
 /// from a parser point of view this
