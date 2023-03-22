@@ -14,14 +14,12 @@ pub fn check_and_parse_generics_params(
     trace: &dyn KParserTracer,
 ) -> Option<GenericParams> {
     trace.log("parsing generics params");
-    // HERE: write the parser of this function
     // compliant to this https://doc.rust-lang.org/stable/reference/items/generics.html
     if ast.match_tok("<") {
         ast.next(); // consume `<``
         let mut generics = vec![];
         while !ast.match_tok(">") {
             trace.log(&format!("iterate over geeneric, stuck on {:?}", ast.peek()));
-            // FIXME: parse the lifetime bounds
             if let Some(lifetime) = check_and_parse_lifetime(ast) {
                 if ast.match_tok("+") {
                     trace.log("bouds parsing not supported");
@@ -36,7 +34,6 @@ pub fn check_and_parse_generics_params(
                 let ty = parse_ty(ast, trace);
                 generics.push(GenericParam::TypeParam(ty));
             }
-            // FIXME: parse the generics types
         }
         ast.next(); // consume the `>` toks
         return Some(GenericParams { params: generics });
@@ -90,23 +87,47 @@ pub fn check_and_parse_dyn<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
 #[macro_export]
 macro_rules! parse_visibility {
     ($ast:expr) => {{
-        if let Some(vs) = $crate::rust::core::check_and_parse_visibility($ast) {
-            let res = Some(vs.clone());
-            $ast.next();
-            res
-        } else {
-            None
-        }
+        $crate::rust::core::check_and_parse_visibility($ast)
     }};
 }
+
 /// parse visibility identifier like `pub(crate)`` and return an option
 /// value in case it is not defined.
-pub fn check_and_parse_visibility<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
-    let visibility = ast.peek();
-    if let TokenTree::Ident(val) = visibility {
-        if val.to_string().contains("pub") {
-            return Some(ast.peek().to_owned());
-        }
+pub fn check_and_parse_visibility<'c>(toks: &'c mut KTokenStream) -> Option<TokenTree> {
+    if check_identifier(toks, "pub", 0) {
+        return Some(toks.advance());
     }
     None
+}
+
+pub fn check_is_funct_with_visibility(toks: &mut KTokenStream) -> bool {
+    if check_identifier(toks, "pub", 0) {
+        if check_identifiers(toks, &["async", "const", "unsafe"], 1) {
+            return true;
+        }
+        if check_identifier(toks, "fn", 2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+pub fn check_identifier(toks: &KTokenStream, ident: &str, step: usize) -> bool {
+    let tok = toks.lookup(step);
+    if let TokenTree::Ident(val) = tok {
+        if val.to_string().contains(ident) {
+            return true;
+        }
+    }
+    false
+}
+
+pub fn check_identifiers(toks: &KTokenStream, ident: &[&str], step: usize) -> bool {
+    let tok = toks.lookup(step);
+    if let TokenTree::Ident(val) = tok {
+        if ident.contains(&val.to_string().as_str()) {
+            return true;
+        }
+    }
+    false
 }

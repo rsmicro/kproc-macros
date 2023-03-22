@@ -58,13 +58,7 @@ pub fn parse_struct_ty(
     tracer: &dyn KParserTracer,
 ) -> Result<FieldToken, KParserError> {
     // name filed
-    let visibility = if let Some(vs) = check_and_parse_visibility(ast) {
-        let res = Some(vs.clone());
-        ast.next();
-        res
-    } else {
-        None
-    };
+    let visibility = parse_visibility!(ast);
     let field_name = ast.advance();
     let separator = ast.advance();
     check!(":", separator)?;
