@@ -54,7 +54,15 @@ pub struct BooComplex {
 struct ForImplDerive {}
 
 #[derive_impl]
-impl ForImplDerive {}
+impl ForImplDerive {
+    fn alibaba(&self) -> Result<(), ()> {
+        todo!()
+    }
+
+    pub fn pub_fn(&self) -> Result<(), ()> {
+        todo!()
+    }
+}
 
 #[default_impl]
 trait Seq<T> {

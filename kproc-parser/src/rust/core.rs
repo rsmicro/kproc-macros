@@ -1,11 +1,12 @@
 //! Contains all the core function that are common across
 //! different modules.
-use super::ast_nodes::{GenericParams, LifetimeParam};
+use super::ast_nodes::{GenericParams, LifetimeParam, TyToken};
 use super::ty::parse_ty;
-use crate::kparser::KParserTracer;
+use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 use crate::rust::ast_nodes::GenericParam;
+use crate::trace;
 
 /// parsing the declaration of the lifetimes and generics for a
 /// declaration of a impl block or struct.
@@ -100,7 +101,21 @@ pub fn check_and_parse_visibility<'c>(toks: &'c mut KTokenStream) -> Option<Toke
     None
 }
 
-pub fn check_is_funct_with_visibility(toks: &mut KTokenStream) -> bool {
+pub fn check_and_parse_fn_qualifier(toks: &mut KTokenStream) -> Option<TokenTree> {
+    if check_identifiers(toks, &["async", "const", "unsafe"], 0) {
+        return Some(toks.advance());
+    }
+    None
+}
+
+pub fn check_and_parse_fn_tok(toks: &mut KTokenStream) -> Option<TokenTree> {
+    if check_identifier(toks, "fn", 0) {
+        return Some(toks.advance());
+    }
+    None
+}
+
+pub fn check_is_fun_with_visibility(toks: &mut KTokenStream) -> bool {
     if check_identifier(toks, "pub", 0) {
         if check_identifiers(toks, &["async", "const", "unsafe"], 1) {
             return true;
@@ -122,6 +137,11 @@ pub fn check_identifier(toks: &KTokenStream, ident: &str, step: usize) -> bool {
     false
 }
 
+pub fn check_tok(toks: &KTokenStream, ident: &str, step: usize) -> bool {
+    let tok = toks.lookup(step);
+    tok.to_string().contains(ident)
+}
+
 pub fn check_identifiers(toks: &KTokenStream, ident: &[&str], step: usize) -> bool {
     let tok = toks.lookup(step);
     if let TokenTree::Ident(val) = tok {
@@ -130,4 +150,27 @@ pub fn check_identifiers(toks: &KTokenStream, ident: &[&str], step: usize) -> bo
         }
     }
     false
+}
+
+pub fn check_raw_toks(toks: &KTokenStream, ident: &[&str], step: usize) -> bool {
+    let tok = toks.lookup(step);
+    ident.contains(&tok.to_string().as_str())
+}
+
+pub fn check_and_parse_return_type(
+    toks: &mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> Option<TyToken> {
+    if check_tok(toks, "-", 0) {
+        toks.next();
+        trace!(tracer, "ok parsed the `-`, now the next is {}", toks.peek());
+        if check_tok(toks, ">", 0) {
+            toks.next();
+            trace!(tracer, "found the `>` no the next is {:?}", toks.peek());
+            // FIXME: add a method to consube by steps
+            let ty = parse_ty(toks, tracer);
+            return Some(ty);
+        }
+    }
+    return None;
 }
