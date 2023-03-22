@@ -459,7 +459,7 @@ impl Display for TraitToken {
 #[derive(Debug)]
 pub enum AssociatedItem {
     AssociatedFn(FnDeclTok),
-    AssociatedMethod(MethodDeclTok),
+    AssociatedMethod(MethodDeclToken),
     // FIXME: add the other associatedItems missing
 }
 
@@ -468,8 +468,12 @@ pub enum AssociatedItem {
 ///
 /// Reference <https://doc.rust-lang.org/stable/reference/items/functions.html>
 #[derive(Debug)]
-pub struct MethodDeclTok {
+pub struct MethodDeclToken {
     pub visibility: Option<TokenTree>,
+    // FIXME: use a better way to be able to
+    // identify what kind of qualifiers is
+    // specified.
+    pub qualifiers: Vec<TokenTree>,
     pub ident: TokenTree,
     pub raw_params: TokenTree,
     pub raw_body: TokenStream,
@@ -478,4 +482,4 @@ pub struct MethodDeclTok {
 /// from a parser point of view this
 /// should not change much because it is
 /// missing just a self param
-pub type FnDeclTok = MethodDeclTok;
+pub type FnDeclTok = MethodDeclToken;

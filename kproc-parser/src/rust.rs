@@ -5,6 +5,7 @@ pub mod core;
 pub mod errors;
 pub mod fmt;
 pub mod kattr;
+pub mod kfunc;
 pub mod kimpl;
 pub mod kparser;
 pub mod kstruct;
