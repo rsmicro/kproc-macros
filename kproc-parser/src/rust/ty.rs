@@ -32,8 +32,8 @@ pub fn parse_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> TyToken {
     let sep = ast.peek().to_owned();
 
     // token allowed as stop words for the type parser
-    if ![",", ">"].contains(&sep.to_string().as_str()) {
-        assert!(false, "found {sep}");
+    if ![",", ">", "{"].contains(&sep.to_string().as_str()) && !ast.is_group() {
+        assert!(false, "seprator found {:?}", sep);
     }
 
     // token to consume, but in this case

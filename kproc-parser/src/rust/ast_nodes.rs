@@ -373,6 +373,7 @@ pub struct ImplToken {
     /// to parse this kind of token tree, and this
     /// will make a slim version of the library.
     pub raw_block: TokenStream,
+    pub functions: Vec<MethodDeclToken>,
 }
 
 impl TopLevelAST for ImplToken {
@@ -473,9 +474,9 @@ pub struct MethodDeclToken {
     // FIXME: use a better way to be able to
     // identify what kind of qualifiers is
     // specified.
-    pub qualifiers: Vec<TokenTree>,
+    pub qualifier: Option<TokenTree>,
     pub ident: TokenTree,
-    pub raw_params: TokenTree,
+    pub raw_params: TokenStream,
     pub raw_body: TokenStream,
 }
 
