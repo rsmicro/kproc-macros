@@ -32,7 +32,7 @@ pub fn parse_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> TyToken {
     let sep = ast.peek().to_owned();
 
     // token allowed as stop words for the type parser
-    if ![",", ">", "{"].contains(&sep.to_string().as_str()) && !ast.is_group() {
+    if ![",", ">", ";"].contains(&sep.to_string().as_str()) && !ast.is_group() {
         assert!(false, "seprator found {:?}", sep);
     }
 
@@ -57,7 +57,8 @@ pub fn parse_ty(ast: &mut KTokenStream, tracer: &dyn KParserTracer) -> TyToken {
         ref_tok,
         lifetime,
         generics,
-        // FIXME: try to understnad how to parse the `TyKind`
+        // FIXME: try to understnad how to parse the `TyKind` or if we
+        // really need it.
         kind: TyKind::NeverType,
     }
 }

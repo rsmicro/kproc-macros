@@ -120,14 +120,14 @@ impl KTokenStream {
     pub fn unwrap_group(&self) -> TokenTree {
         match self.peek() {
             TokenTree::Group(_) => self.peek().clone(),
-            _ => panic!("the token {} is not a `TokenTree::Group`", self.peek()),
+            _ => panic!("the token {:?} is not a `TokenTree::Group`", self.peek()),
         }
     }
 
     pub fn unwrap_group_as_stream(&self) -> TokenStream {
         match self.peek() {
             TokenTree::Group(stream) => stream.stream(),
-            _ => panic!("the token {} is not a `TokenTree::Group`", self.peek()),
+            _ => panic!("the token {:?} is not a `TokenTree::Group`", self.peek()),
         }
     }
 

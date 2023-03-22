@@ -35,7 +35,6 @@ pub fn parse_impl<'c>(
     let mut impl_block = toks.to_ktoken_stream();
 
     let mut funs = Vec::new();
-
     while !impl_block.is_end() {
         // FIXME we Suppose to have all the function and no
         // extra stuff
