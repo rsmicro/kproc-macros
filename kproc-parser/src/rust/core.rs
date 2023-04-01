@@ -118,9 +118,8 @@ pub fn check_and_parse_fn_tok(toks: &mut KTokenStream) -> Option<TokenTree> {
 pub fn check_is_fun_with_visibility(toks: &mut KTokenStream) -> bool {
     if check_identifier(toks, "pub", 0) {
         if check_identifiers(toks, &["async", "const", "unsafe"], 1) {
-            return true;
-        }
-        if check_identifier(toks, "fn", 2) {
+            return check_identifier(&toks, "fn", 2);
+        } else if check_identifier(toks, "fn", 1) {
             return true;
         }
     }
