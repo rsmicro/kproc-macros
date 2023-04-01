@@ -75,6 +75,7 @@ pub fn parse_fn<'c>(
         generics,
         raw_params: params,
         raw_body: body,
+        return_ty: rt_ty,
     };
     Ok(method)
 }

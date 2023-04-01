@@ -491,6 +491,7 @@ pub struct MethodDeclToken {
     pub ident: TokenTree,
     pub generics: Option<GenericParams>,
     pub raw_params: TokenStream,
+    pub return_ty: Option<TyToken>,
     pub raw_body: Option<TokenStream>,
 }
 
