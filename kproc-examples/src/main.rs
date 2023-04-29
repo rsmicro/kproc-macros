@@ -82,6 +82,11 @@ async fn foo_async(string: &str) -> Result<Vec<String>, ()> {
     todo!()
 }
 
+#[derive_fn]
+fn foo_mut(string: &mut str) -> Result<Vec<String>, ()> {
+    todo!()
+}
+
 fn main() {
     let obj = Foo {
         attr: "Alibaba".to_string(),

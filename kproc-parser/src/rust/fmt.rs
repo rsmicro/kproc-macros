@@ -17,11 +17,15 @@ pub(crate) fn fmt_generics(generics: &GenericParams) -> String {
 pub fn fmt_ty(ty: &TyToken) -> String {
     let mut prefix = String::new();
     if let Some(refer) = &ty.ref_tok {
-        prefix += refer.to_string().as_str();
+        prefix += &refer.to_string();
+    }
+
+    if let Some(mut_tok) = &ty.mut_tok {
+        prefix += &mut_tok.to_string();
     }
 
     if let Some(dyn_tok) = &ty.dyn_tok {
-        prefix += dyn_tok.to_string().as_str();
+        prefix += &dyn_tok.to_string();
     }
 
     let mut postfix = String::new();

@@ -13,6 +13,7 @@ use crate::{
 };
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::fs::OpenOptions;
 
 use super::{
     fmt::{fmt_generics, fmt_ty},
@@ -251,6 +252,7 @@ pub enum TyKind {
 pub struct TyToken {
     pub kind: TyKind,
     pub ref_tok: Option<TokenTree>,
+    pub mut_tok: Option<TokenTree>,
     pub identifier: TokenTree,
     pub dyn_tok: Option<TokenTree>,
     pub lifetime: Option<LifetimeParam>,

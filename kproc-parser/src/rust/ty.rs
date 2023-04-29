@@ -7,6 +7,7 @@ use crate::rust::ast_nodes::LifetimeParam;
 use crate::rust::ast_nodes::TyKind;
 use crate::rust::core::check_and_parse_dyn;
 use crate::rust::core::check_and_parse_lifetime;
+use crate::rust::core::check_and_parse_mut;
 use crate::rust::core::check_and_parse_ref;
 use crate::trace;
 
@@ -26,6 +27,7 @@ pub fn parse_ty(stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> TyToke
     };
 
     let dyn_tok = check_and_parse_dyn(stream);
+    let mut_tok = check_and_parse_mut(stream);
     let identifier = stream.advance();
     trace!(tracer, "type identifier {identifier}");
     trace!(tracer, "is at the EOF {}", stream.is_end());
@@ -60,6 +62,7 @@ pub fn parse_ty(stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> TyToke
         identifier,
         dyn_tok,
         ref_tok,
+        mut_tok,
         lifetime,
         generics,
         // FIXME: try to understnad how to parse the `TyKind` or if we
