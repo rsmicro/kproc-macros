@@ -491,6 +491,12 @@ pub struct MethodDeclToken {
     pub ident: TokenTree,
     pub generics: Option<GenericParams>,
     pub raw_params: TokenStream,
+    /// method/function parameters parser
+    /// from the `raw_params` in a tuple
+    /// of `(identifier, Type Token)`
+    /// and the position is identified by
+    /// vector index.
+    pub params: Vec<(TokenTree, TyToken)>,
     pub return_ty: Option<TyToken>,
     pub raw_body: Option<TokenStream>,
 }

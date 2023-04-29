@@ -78,7 +78,12 @@ impl KTokenStream {
 
     /// return he token at the current position.
     pub fn peek(&self) -> &TokenTree {
-        assert!(self.pos < self.size);
+        assert!(
+            self.pos < self.size,
+            "peek: out of bound requested {} vs tot size {}",
+            self.pos,
+            self.size
+        );
         &self.kstream[self.pos]
     }
 
@@ -94,7 +99,7 @@ impl KTokenStream {
 
     /// check if it is reach the end of the stream
     pub fn is_end(&self) -> bool {
-        self.pos > self.size - 1
+        self.pos >= self.size
     }
 
     /// unwrap the `TokenTree::Group` and the return the
