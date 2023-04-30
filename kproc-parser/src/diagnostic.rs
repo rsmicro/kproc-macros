@@ -9,7 +9,7 @@
 //! way to print a crafted message and then panic the compiler.
 //!
 //! An example of message in stable rust is
-//! ```
+//! ```ignore
 //! error: `kproc-parser/src/diagnostic.rs:50` the token `error` has the following Boo
 //! error: something happens
 //! error: proc-macro derive panicked
