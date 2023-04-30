@@ -1,8 +1,12 @@
 //! kproc-parser is a minimal procedural macros parser that
 //! produce a convenient AST by including only the
 //! necessary code.
-#![feature(proc_macro_diagnostic)]
-pub mod diagnostic;
+
+// FIXME: enable be if you are including me inside
+// a nightly project.
+//#![feature(proc_macro_diagnostic)]
+mod diagnostic;
+pub mod kdiagnostic;
 pub mod kparser;
 pub mod kproc_macros;
 pub mod macros;

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
 use kproc_macros_examples::default_impl;
 use kproc_macros_examples::derive_fn;
 use kproc_macros_examples::derive_impl;
@@ -106,7 +108,6 @@ mod tests {
         assert_eq!(obj.get_attr(), obj.attr);
     }
 
-    /*
     #[test]
     fn generics_works() {
         let obj = crate::Boo {
@@ -126,5 +127,4 @@ mod tests {
         };
         assert!(obj.gen.is_empty());
     }
-    */
 }

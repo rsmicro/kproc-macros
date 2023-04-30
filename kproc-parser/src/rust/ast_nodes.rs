@@ -13,7 +13,6 @@ use crate::{
 };
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::fs::OpenOptions;
 
 use super::{
     fmt::{fmt_generics, fmt_ty},

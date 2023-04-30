@@ -1,5 +1,5 @@
 //! KParser tracer API
-use crate::diagnostic::KDiagnInfo;
+use crate::kdiagnostic::KDiagnInfo;
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 
@@ -31,16 +31,21 @@ impl KParserError {
         KParserError { dig }
     }
 
-    pub fn with_msg(tok: TokenTree, msg: &str) -> Self {
-        let diag = KDiagnInfo::new(msg, tok);
+    pub fn with_msg(tok: TokenTree, msg: &str, line: String, file: String) -> Self {
+        let diag = KDiagnInfo::new(msg, tok, line, file);
         Self::new(diag)
     }
 
-    pub fn expect(expect_tok: &str, tok: &TokenTree) -> Result<(), KParserError> {
+    pub fn expect(
+        expect_tok: &str,
+        tok: &TokenTree,
+        line: String,
+        file: String,
+    ) -> Result<(), KParserError> {
         if expect_tok != &tok.to_string() {
             let msg = format!("expected `{expect_tok}` but got `{tok}`");
             return Err(KParserError {
-                dig: KDiagnInfo::new(&msg, tok.to_owned()),
+                dig: KDiagnInfo::new(&msg, tok.to_owned(), line, file),
             });
         }
         Ok(())

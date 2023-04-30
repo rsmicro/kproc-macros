@@ -1,6 +1,6 @@
 use kproc_parser::kparser::KParserTracer;
 use kproc_parser::rust::kparser::RustParser;
-use kproc_parser::trace;
+use kproc_parser::{error, trace};
 use proc_macro::TokenStream;
 
 mod gen;
@@ -20,7 +20,6 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
     let tracer = Tracer {};
     let parser = RustParser::with_tracer(&tracer);
     let ast = parser.parse_struct(&input);
-
     let toks = generate_impl(&ast);
     trace!(tracer, "{}", toks);
     toks

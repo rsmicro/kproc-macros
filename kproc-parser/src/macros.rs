@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! check {
     ($a:literal, $b:expr) => {
-        KParserError::expect($a, &$b)
+        KParserError::expect($a, &$b, line!().to_string(), file!().to_string())
     };
 }
 
@@ -11,9 +11,9 @@ macro_rules! check {
 macro_rules! warn {
     ($when: expr, $tok: expr, $($msg:tt)*) => {
         if $when {
-            use $crate::diagnostic::KDiagnInfo;
+            use $crate::kdiagnostic::KDiagnInfo;
             let msg = format!($($msg)*);
-            KDiagnInfo::new(&msg, $tok).warn().emit()
+            KDiagnInfo::new(&msg, $tok, line!().to_string(), file!().to_string()).warn().emit()
         }
     };
 }
@@ -22,9 +22,9 @@ macro_rules! warn {
 /// emit a compiler error
 macro_rules! error {
     ($tok: expr, $($msg:tt)*) => {{
-        use $crate::diagnostic::KDiagnInfo;
+        use $crate::kdiagnostic::KDiagnInfo;
         let msg = format!($($msg)*);
-        KDiagnInfo::new(&msg, $tok).emit()
+        KDiagnInfo::new(&msg, $tok, line!().to_string(), file!().to_string()).emit()
     }};
 }
 
@@ -33,7 +33,7 @@ macro_rules! error {
 macro_rules! build_error {
     ($tok: expr, $($msg:tt)*) => {{
         let msg = format!($($msg)*);
-        KParserError::with_msg($tok, &msg)
+        KParserError::with_msg($tok, &msg, line!().to_string(), file!().to_string())
     }};
 }
 

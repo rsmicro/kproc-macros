@@ -1,5 +1,3 @@
-use std::result;
-
 use super::ast_nodes::{ImplToken, MethodDeclToken, TopLevelNode, TraitToken};
 use super::kfunc::parse_fn;
 use super::kimpl::parse_impl;

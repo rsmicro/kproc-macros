@@ -1,12 +1,13 @@
 //! Contains all the core function that are common across
 //! different modules.
-use super::ast_nodes::{GenericParams, LifetimeParam, TyToken};
-use super::ty::parse_ty;
-use crate::kparser::{KParserError, KParserTracer};
+
+use crate::kparser::KParserTracer;
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
-use crate::rust::ast_nodes::GenericParam;
 use crate::trace;
+
+use super::ast_nodes::{GenericParam, GenericParams, LifetimeParam, TyToken};
+use super::ty::parse_ty;
 
 /// parsing the declaration of the lifetimes and generics for a
 /// declaration of a impl block or struct.

@@ -1,13 +1,11 @@
 //! kfunc is the module that it is used to
 //! parse the function like rust syntax.
-use std::ptr::read_volatile;
-
 use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 use crate::rust::core::{check_and_parse_generics_params, check_and_parse_return_type};
 use crate::rust::ty::parse_ty;
-use crate::{check, error, parse_visibility, trace};
+use crate::{check, parse_visibility, trace};
 
 use super::ast_nodes::{MethodDeclToken, TyToken};
 use super::core::{check_and_parse_fn_qualifier, check_is_fun_with_visibility};
