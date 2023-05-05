@@ -10,7 +10,7 @@ repository = "https://codeberg.org/vincenzopalazzo/kproc-macros.git"
 license = "MIT"
 
 [dependencies]
-proc-macro2 = { version = "1.0.47", optional = true}
+proc-macro2 = { version = "^1.0", optional = true}
 
 [features]
 proc_macro_wrapper = ["dep:proc-macro2"]
