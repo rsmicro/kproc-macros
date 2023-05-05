@@ -5,6 +5,9 @@ use super::ast_nodes::{GenericParams, TyToken};
 use crate::warn;
 
 pub(crate) fn fmt_generics(generics: &GenericParams) -> String {
+    if generics.params.is_empty() {
+        return String::new();
+    }
     let mut buff = "<".to_owned();
     for generic in &generics.params {
         buff += &format!("{generic}");
