@@ -39,7 +39,10 @@ pub fn parse_ty(stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> TyToke
     // checking the generic will panic the parser.
     let mut generics: Option<Vec<TyToken>> = None;
     if !stream.is_end() {
-        generics = Some(parse_recursive_ty(stream, tracer));
+        let subtypes = parse_recursive_ty(stream, tracer);
+        if !subtypes.is_empty() {
+            generics = Some(subtypes);
+        }
         let sep = stream.peek().to_owned();
 
         // token allowed as stop words for the type parser
