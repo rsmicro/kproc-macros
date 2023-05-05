@@ -40,11 +40,11 @@ pub fn fmt_ty(ty: &TyToken) -> String {
 
     if let Some(generics) = &ty.generics {
         postfix += "<";
-        for generic in generics {
-            // FIXME: remove the last comma in
-            // the last item
-            postfix += &format!("{generic}, ");
-        }
+        postfix += &generics
+            .iter()
+            .map(|it| it.to_string())
+            .collect::<Vec<String>>()
+            .join(",");
         postfix += ">";
     } else {
         let ident = ty.identifier.clone();
