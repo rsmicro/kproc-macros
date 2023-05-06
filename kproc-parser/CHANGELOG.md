@@ -1,3 +1,8 @@
+# v0.0.1-beta.5
+
+## Fixed
+- support multiple version of proc_macro2 ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/6d242bc4e3bb67a076f81ef7ef7dd01bfb6d7569)). @vincenzopalazzo 05-05-2023
+
 # v0.0.1-beta.4
 
 ## Fixed
