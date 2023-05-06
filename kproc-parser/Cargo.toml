@@ -1,6 +1,6 @@
 [package]
 name = "kproc-parser"
-version = "0.0.1-beta.4"
+version = "0.0.1-beta.5"
 edition = "2021"
 authors = ["Vincenzo Palazzo <vincenzopalazzodev@gmail.com>"]
 description = "minimal procedural macros parser that produce a convenient AST by including only the necessary code"
