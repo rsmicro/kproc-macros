@@ -1,6 +1,7 @@
 use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::rust::core::*;
+use crate::rust::kattr::check_and_parse_cond_attribute;
 use crate::rust::kfunc::parse_fn;
 use crate::{check, parse_visibility, trace};
 
@@ -12,6 +13,8 @@ pub fn parse_trait<'c>(
     tracer: &dyn KParserTracer,
 ) -> Result<TraitToken, KParserError> {
     trace!(tracer, "start parning the trait");
+    let attrs = check_and_parse_cond_attribute(ast, tracer);
+
     let vist = parse_visibility!(ast);
     let trait_tok = ast.advance();
     check!("trait", trait_tok)?;
@@ -30,6 +33,7 @@ pub fn parse_trait<'c>(
     }
 
     let trait_tok = TraitToken {
+        attrs,
         visibility: vist,
         ident: name,
         generics,

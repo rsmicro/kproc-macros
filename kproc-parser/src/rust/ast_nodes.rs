@@ -428,6 +428,7 @@ impl Display for ImplToken {
 /// Reference <https://doc.rust-lang.org/stable/reference/items/traits.html>
 #[derive(Debug)]
 pub struct TraitToken {
+    pub attrs: HashMap<String, AttrToken>,
     pub visibility: Option<TokenTree>,
     pub ident: TokenTree,
     pub generics: Option<GenericParams>,
