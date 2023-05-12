@@ -66,6 +66,7 @@ pub struct BooComplexCommit {
 
 struct ForImplDerive {}
 
+/// this is a impl doc
 #[derive_impl]
 impl ForImplDerive {
     fn alibaba(&self) -> Result<(), ()> {
@@ -76,7 +77,7 @@ impl ForImplDerive {
         todo!()
     }
 }
-
+/// this is a trait docs
 #[default_impl]
 trait Seq<T> {
     fn len(&self) -> u32;
