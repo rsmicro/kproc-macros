@@ -4,6 +4,7 @@ use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 use crate::rust::core::{check_and_parse_generics_params, check_and_parse_return_type};
+use crate::rust::kattr::check_and_parse_cond_attribute;
 use crate::rust::ty::parse_ty;
 use crate::{check, parse_visibility, trace};
 
@@ -33,6 +34,7 @@ pub fn parse_fn<'c>(
 ) -> Result<MethodDeclToken, KParserError> {
     trace!(tracer, "Start parsing fn");
 
+    let attrs = check_and_parse_cond_attribute(toks, tracer);
     let visibility = if check_is_fun_with_visibility(toks) {
         parse_visibility!(toks)
     } else {
@@ -76,6 +78,7 @@ pub fn parse_fn<'c>(
     };
 
     let method = MethodDeclToken {
+        attrs,
         visibility,
         qualifier,
         ident,

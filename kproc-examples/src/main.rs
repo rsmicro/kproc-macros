@@ -84,6 +84,7 @@ trait Seq<T> {
     fn iter<F>(&self, f: F);
 }
 
+/// this is just a foo function
 #[derive_fn]
 fn foo(string: &str) -> Result<Vec<String>, ()> {
     todo!()
