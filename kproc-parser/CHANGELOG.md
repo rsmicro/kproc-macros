@@ -1,3 +1,11 @@
+# v0.0.1-beta.6
+
+## Fixed
+- decode the docs attribute on a trait ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/9559cf1360a9c032f53be0520d4d567d9b9b9156)). @vincenzopalazzo 12-05-2023
+- decode the docs attribute on a function ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/cce56cac5eda79004ab24af6de132608134b28cf)). @vincenzopalazzo 12-05-2023
+- decode the docs attribute on a struct ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/e42dc809cecf5327471ea0dca66bf1b96e6cd894)). @vincenzopalazzo 12-05-2023
+
+
 # v0.0.1-beta.5
 
 ## Fixed
