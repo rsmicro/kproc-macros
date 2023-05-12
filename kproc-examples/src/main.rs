@@ -54,6 +54,16 @@ pub struct BooComplex {
     self_ref: u32,
 }
 
+/// The macros take into count also the comments.
+#[derive(RustBuilder)]
+pub struct BooComplexCommit {
+    pub gen: Vec<Foo>,
+    #[allow(dead_code)]
+    attr: String,
+    #[allow(dead_code)]
+    self_ref: u32,
+}
+
 struct ForImplDerive {}
 
 #[derive_impl]

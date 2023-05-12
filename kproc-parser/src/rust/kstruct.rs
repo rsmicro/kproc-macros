@@ -14,21 +14,24 @@ use super::kattr::check_and_parse_cond_attribute;
 /// parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
 pub fn parse_struct<'c>(
-    ast: &'c mut KTokenStream,
+    stream: &'c mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> Result<StructToken, KParserError> {
-    let visibility = parse_visibility!(ast);
-    let tok = ast.advance();
+    trace!(tracer, "************ {:?}", stream);
+    let attrs = check_and_parse_cond_attribute(stream, tracer);
+    let visibility = parse_visibility!(stream);
+    let tok = stream.advance();
     check!("struct", tok)?;
 
-    let name = ast.advance();
-    let generics = check_and_parse_generics_params(ast, tracer);
+    let name = stream.advance();
+    let generics = check_and_parse_generics_params(stream, tracer);
     trace!(tracer, "Struct generics ty: {:?}", generics);
 
-    let mut group = ast.to_ktoken_stream();
+    let mut group = stream.to_ktoken_stream();
     let fields = parse_struct_fields(&mut group, tracer)?;
 
     let struct_tok = StructToken {
+        attrs,
         visibility,
         name,
         fields,
