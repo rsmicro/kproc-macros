@@ -485,6 +485,7 @@ pub enum AssociatedItem {
 /// Reference <https://doc.rust-lang.org/stable/reference/items/functions.html>
 #[derive(Debug)]
 pub struct MethodDeclToken {
+    pub attrs: HashMap<String, AttrToken>,
     pub visibility: Option<TokenTree>,
     // FIXME: use a better way to be able to
     // identify what kind of qualifiers is
