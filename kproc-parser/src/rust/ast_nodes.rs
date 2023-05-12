@@ -93,6 +93,7 @@ impl From<MethodDeclToken> for TopLevelNode {
 // FIXME: parse the TupleStruct
 #[derive(Debug)]
 pub struct StructToken {
+    pub attrs: HashMap<String, AttrToken>,
     pub visibility: Option<TokenTree>,
     pub name: TokenTree,
     pub fields: Vec<FieldToken>,
