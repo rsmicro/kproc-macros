@@ -1,5 +1,5 @@
 //! API to parse a rust `impl`
-use crate::kparser::{KParserError, KParserTracer};
+use crate::kparser::{self, KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::rust::ast_nodes::ImplToken;
 use crate::rust::core::check_and_parse_generics_params;
@@ -11,11 +11,11 @@ use crate::{check, trace};
 pub fn parse_impl<'c>(
     toks: &'c mut KTokenStream,
     tracer: &dyn KParserTracer,
-) -> Result<ImplToken, KParserError> {
+) -> kparser::Result<ImplToken> {
     let attr = check_and_parse_cond_attribute(toks, tracer);
     let impl_tok = toks.advance();
     check!("impl", impl_tok)?;
-    let generics = check_and_parse_generics_params(toks, tracer);
+    let generics = check_and_parse_generics_params(toks, tracer)?;
     let name = toks.advance();
     let _for_ty = if toks.match_tok("for") {
         // FIXME: parsing the generic and lifetime usage

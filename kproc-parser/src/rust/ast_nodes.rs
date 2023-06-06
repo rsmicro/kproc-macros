@@ -143,7 +143,7 @@ pub struct GenericParams {
 pub enum GenericParam {
     LifetimeParam(LifetimeParam),
     TypeParam(TyToken),
-    // FIXME: support the const params
+    Bounds(Bounds), // FIXME: support the const params
 }
 
 impl Display for GenericParam {
@@ -151,21 +151,42 @@ impl Display for GenericParam {
         match self {
             Self::LifetimeParam(param) => write!(f, "{param}"),
             Self::TypeParam(param) => write!(f, "{param}"),
+            Self::Bounds(bounds) => write!(f, "{bounds}"),
         }
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum Bounds {
+    Lifetime(LifetimeParam),
+    Trait(TypeParam),
+}
+
+impl std::fmt::Display for Bounds {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        unimplemented!()
+    }
+}
+
+/// 'a: 'static
 #[derive(Debug, Clone)]
 pub struct LifetimeParam {
     pub lifetime_or_label: TokenTree,
-    pub bounds: Option<TypeParamBound>,
+    pub bounds: Option<Vec<Bounds>>,
 }
 
 impl std::fmt::Display for LifetimeParam {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut code = format!("'{}", self.lifetime_or_label);
         if let Some(bounds) = &self.bounds {
-            code += &format!(" {bounds}");
+            code += &format!(
+                " {}",
+                bounds
+                    .into_iter()
+                    .map(|bound| format!("{bound} +"))
+                    .collect::<String>()
+            );
+            code = code.strip_suffix("+").unwrap_or(&code).to_owned();
         }
         write!(f, "{code}")
     }
@@ -174,21 +195,7 @@ impl std::fmt::Display for LifetimeParam {
 #[derive(Debug, Clone)]
 pub struct TypeParam {
     pub identifier: TokenTree,
-    pub bounds: Option<TypeParamBound>,
-    pub ty: Option<TyToken>,
-}
-
-#[derive(Debug, Clone)]
-pub enum TypeParamBound {
-    Lifetime(Vec<TokenTree>),
-    TraitBound,
-    // FIXME: complete this
-}
-
-impl std::fmt::Display for TypeParamBound {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
+    pub bounds: Option<Vec<Bounds>>,
 }
 
 impl Display for GenericParams {
@@ -257,6 +264,7 @@ pub struct TyToken {
     pub dyn_tok: Option<TokenTree>,
     pub lifetime: Option<LifetimeParam>,
     pub generics: Option<Vec<TyToken>>,
+    pub bounds: Vec<Bounds>,
 }
 
 impl Display for TyToken {

@@ -1,10 +1,12 @@
 //! Contains all the core function that are common across
 //! different modules.
 
-use crate::kparser::KParserTracer;
+use crate::kparser::KParserError;
+use crate::kparser::{self, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
-use crate::trace;
+use crate::rust::ast_nodes::TypeParam;
+use crate::{build_error, check, trace};
 
 use super::ast_nodes::{GenericParam, GenericParams, LifetimeParam, TyToken};
 use super::ty::parse_ty;
@@ -14,15 +16,17 @@ use super::ty::parse_ty;
 pub fn check_and_parse_generics_params(
     ast: &mut KTokenStream,
     trace: &dyn KParserTracer,
-) -> Option<GenericParams> {
+) -> kparser::Result<Option<GenericParams>> {
     trace.log("parsing generics params");
     // compliant to this https://doc.rust-lang.org/stable/reference/items/generics.html
     if ast.match_tok("<") {
         ast.next(); // consume `<``
+
         let mut generics = vec![];
         while !ast.match_tok(">") {
             trace.log(&format!("iterate over geeneric, stuck on {:?}", ast.peek()));
             if let Some(lifetime) = check_and_parse_lifetime(ast) {
+                // FIXME: this works? or we need a better parsing for the bounds?
                 if ast.match_tok("+") {
                     trace.log("bouds parsing not supported");
                 } else {
@@ -33,14 +37,79 @@ pub fn check_and_parse_generics_params(
                     generics.push(GenericParam::LifetimeParam(param));
                 }
             } else {
-                let ty = parse_ty(ast, trace);
-                generics.push(GenericParam::TypeParam(ty));
+                if let Some(ty) = parse_ty(ast, trace)? {
+                    generics.push(GenericParam::TypeParam(ty));
+                }
             }
         }
         ast.next(); // consume the `>` toks
-        return Some(GenericParams { params: generics });
+        return Ok(Some(GenericParams { params: generics }));
     }
-    None
+    Ok(None)
+}
+
+pub fn check_and_parse_bounds(
+    stream: &mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> kparser::Result<Option<GenericParams>> {
+    trace!(tracer, "check and parsing the type bounds");
+    // compliant to this https://doc.rust-lang.org/stable/reference/items/generics.html
+    if stream.match_tok("<") {
+        stream.next(); // consume `<``
+
+        let mut generics = vec![];
+        while !stream.match_tok(">") {
+            trace!(
+                tracer,
+                "iterate over tokens, current token is: `{:?}`",
+                stream.peek()
+            );
+            let mut generic: Option<GenericParam> = None;
+            while !stream.match_tok(",") && !stream.match_tok(">") {
+                match stream.peek().to_string().as_str() {
+                    "'" => {
+                        let lifetime = check_and_parse_lifetime(stream).ok_or(build_error!(
+                            stream.peek().clone(),
+                            "this is a bug while parsing a lifetime, please report a bug"
+                        ))?;
+                        // FIXME: check the type bound
+                        generic = Some(GenericParam::LifetimeParam(LifetimeParam {
+                            lifetime_or_label: lifetime,
+                            bounds: None,
+                        }));
+                    }
+                    "+" => unimplemented!(
+                        "unimplemented contatentation of trait bound + {:?}",
+                        generics
+                    ),
+                    _ => {
+                        trace!(tracer, "checking type");
+                        if let Some(ty) = check_and_parse_ty(stream, tracer)? {
+                            trace!(tracer, "is type");
+                            generic = Some(GenericParam::TypeParam(ty));
+                        } else {
+                            trace!(tracer, "is trait bound");
+                            check!(":", stream.lookup(1).clone())?;
+                            let identifier = stream.advance();
+                            check!(":", stream.advance())?;
+                            let trait_bound = stream.advance();
+                            // FIXME: fix the trait bound here
+                            generic = Some(GenericParam::Bounds(
+                                crate::rust::ast_nodes::Bounds::Trait(TypeParam {
+                                    identifier,
+                                    bounds: None,
+                                }),
+                            ))
+                        }
+                    }
+                }
+            }
+            generics.push(generic.unwrap());
+        }
+        stream.next(); // consume the `>` toks
+        return Ok(Some(GenericParams { params: generics }));
+    }
+    Ok(None)
 }
 
 /// helper function that check and parse the reference token `&`, if
@@ -63,6 +132,20 @@ pub fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTr
             Some(ast.advance().to_owned())
         }
         _ => None,
+    }
+}
+
+/// helper function that check and parse the lifetime symbol `'`, if
+/// is not present return `None`.
+pub fn check_and_parse_ty(
+    stream: &mut KTokenStream,
+    tracer: &dyn KParserTracer,
+) -> kparser::Result<Option<TyToken>> {
+    let token = stream.lookup(1).to_string();
+    trace!(tracer, "checking type with token: {}", token.to_string());
+    match token.as_str() {
+        ":" => Ok(None),
+        _ => parse_ty(stream, tracer),
     }
 }
 
@@ -160,7 +243,7 @@ pub fn check_raw_toks(toks: &KTokenStream, ident: &[&str], step: usize) -> bool 
 pub fn check_and_parse_return_type(
     toks: &mut KTokenStream,
     tracer: &dyn KParserTracer,
-) -> Option<TyToken> {
+) -> kparser::Result<Option<TyToken>> {
     if check_tok(toks, "-", 0) {
         toks.next();
         trace!(tracer, "ok parsed the `-`, now the next is {}", toks.peek());
@@ -168,9 +251,9 @@ pub fn check_and_parse_return_type(
             toks.next();
             trace!(tracer, "found the `>` no the next is {:?}", toks.peek());
             // FIXME: add a method to consube by steps
-            let ty = parse_ty(toks, tracer);
-            return Some(ty);
+            let ty = parse_ty(toks, tracer)?;
+            return Ok(ty);
         }
     }
-    return None;
+    return Ok(None);
 }

@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
+use std::fmt::Debug;
+
 use kproc_macros_examples::default_impl;
 use kproc_macros_examples::derive_fn;
 use kproc_macros_examples::derive_impl;
@@ -98,6 +100,26 @@ async fn foo_async(string: &str) -> Result<Vec<String>, ()> {
 
 #[derive_fn]
 fn foo_mut(string: &mut str) -> Result<Vec<String>, ()> {
+    todo!()
+}
+
+/// this is just a foo function
+#[derive_fn]
+fn foo_with_bound<T: Debug>(value: T) -> Result<Vec<String>, ()> {
+    todo!()
+}
+
+/// this is just a foo function
+#[derive_fn]
+fn foo_with_bound_with_multiuple_type<T: Debug + ToString>(value: T) -> Result<Vec<String>, ()> {
+    todo!()
+}
+
+/// this is just a foo function
+#[derive_fn]
+fn foo_with_bound_with_multiuple_type_double<T: Debug + ToString, R>(
+    value: T,
+) -> Result<Vec<R>, ()> {
     todo!()
 }
 

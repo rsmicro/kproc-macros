@@ -1,4 +1,6 @@
 //! KParser tracer API
+use std::result;
+
 use crate::kdiagnostic::KDiagnInfo;
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
@@ -16,6 +18,8 @@ pub struct DummyTracer;
 impl KParserTracer for DummyTracer {
     fn log(&self, _: &str) {}
 }
+
+pub type Result<T> = result::Result<T, KParserError>;
 
 /// Generic error where with an specific
 /// token Tree and and error message that
@@ -36,12 +40,7 @@ impl KParserError {
         Self::new(diag)
     }
 
-    pub fn expect(
-        expect_tok: &str,
-        tok: &TokenTree,
-        line: String,
-        file: String,
-    ) -> Result<(), KParserError> {
+    pub fn expect(expect_tok: &str, tok: &TokenTree, line: String, file: String) -> Result<()> {
         if expect_tok != &tok.to_string() {
             let msg = format!("expected `{expect_tok}` but got `{tok}`");
             return Err(KParserError {
@@ -65,9 +64,5 @@ impl KParserError {
 pub trait KParser {
     /// try to parse the token stream inside the type E, and if
     /// there is no option for kparser, return an error.
-    fn parse<E>(
-        &self,
-        stream: &mut KTokenStream,
-        tracer: &dyn KParserTracer,
-    ) -> Result<E, KParserError>;
+    fn parse<E>(&self, stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> Result<E>;
 }

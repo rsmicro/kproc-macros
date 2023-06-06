@@ -64,6 +64,12 @@ impl KTokenStream {
         &self.kstream[self.pos + step]
     }
 
+    /// perform a search operation inside the stream by a number
+    /// of specified steps.
+    pub fn has<'c>(&'c self, step: usize) -> bool {
+        self.size > self.pos + step
+    }
+
     /// advance the position of the stream.
     pub fn next(&mut self) {
         self.pos += 1;

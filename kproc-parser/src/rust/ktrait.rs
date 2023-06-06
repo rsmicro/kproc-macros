@@ -19,7 +19,7 @@ pub fn parse_trait<'c>(
     let trait_tok = ast.advance();
     check!("trait", trait_tok)?;
     let name = ast.advance();
-    let generics = check_and_parse_generics_params(ast, tracer);
+    let generics = check_and_parse_generics_params(ast, tracer)?;
 
     let raw_block = ast.unwrap_group_as_stream();
     let mut block = ast.to_ktoken_stream();
