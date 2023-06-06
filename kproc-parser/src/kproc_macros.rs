@@ -1,5 +1,7 @@
 //! core module that implement the basic concept
 //! used inside the parser.
+use std::fmt::Debug;
+
 use crate::proc_macro::{TokenStream, TokenTree};
 
 /// Convinient way to manage any kind of tokens stream
@@ -62,6 +64,12 @@ impl KTokenStream {
     pub fn lookup<'c>(&'c self, step: usize) -> &'c TokenTree {
         assert!(self.size > self.pos + step);
         &self.kstream[self.pos + step]
+    }
+
+    /// perform a search operation inside the stream by a number
+    /// of specified steps.
+    pub fn has<'c>(&'c self, step: usize) -> bool {
+        self.size > self.pos + step
     }
 
     /// advance the position of the stream.
@@ -158,14 +166,23 @@ impl KTokenStream {
 
 pub trait MatchTok
 where
-    Self: ToString,
+    Self: ToString + Debug,
 {
     fn match_tok(&self, tok: &str) -> bool {
         self.to_string().as_str() == tok
     }
+
+    fn to_token_stream(&self) -> KTokenStream;
 }
 
-impl MatchTok for TokenTree {}
+impl MatchTok for TokenTree {
+    fn to_token_stream(&self) -> KTokenStream {
+        match self {
+            TokenTree::Group(stream) => KTokenStream::new(&stream.stream()),
+            _ => panic!("no stream on token {:?}", self),
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct OrderedTokenTree {

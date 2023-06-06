@@ -1,4 +1,4 @@
-use kproc_parser::kparser::KParserTracer;
+use kproc_parser::kparser::{DummyTracer, KParserTracer};
 use kproc_parser::rust::kparser::RustParser;
 use kproc_parser::{error, trace};
 use proc_macro::TokenStream;
@@ -17,7 +17,7 @@ impl KParserTracer for Tracer {
 /// Mock this will be some parse macros
 #[proc_macro_derive(RustBuilder, attributes(build))]
 pub fn derive_rust(input: TokenStream) -> TokenStream {
-    let tracer = Tracer {};
+    let tracer = DummyTracer {};
     let parser = RustParser::with_tracer(&tracer);
     let ast = parser.parse_struct(&input);
     let toks = generate_impl(&ast);
@@ -27,7 +27,7 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn derive_impl(_: TokenStream, input: TokenStream) -> TokenStream {
-    let tracer = Tracer {};
+    let tracer = DummyTracer {};
     let parser = RustParser::with_tracer(&tracer);
 
     let ast = parser.parse_impl(&input);

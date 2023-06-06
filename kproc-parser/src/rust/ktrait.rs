@@ -19,15 +19,15 @@ pub fn parse_trait<'c>(
     let trait_tok = ast.advance();
     check!("trait", trait_tok)?;
     let name = ast.advance();
-    let generics = check_and_parse_generics_params(ast, tracer);
-
+    trace!(tracer, "`{name}` checking bounds on `{:?}`", ast.peek());
+    let generics = check_and_parse_bounds(ast, tracer)?;
+    trace!(tracer, "checking the trait block");
     let raw_block = ast.unwrap_group_as_stream();
     let mut block = ast.to_ktoken_stream();
 
     let mut funs = Vec::new();
     while !block.is_end() {
-        // FIXME we Suppose to have all the function and no
-        // extra stuff
+        trace!(tracer, "checking body");
         let fn_tok = parse_fn(&mut block, tracer)?;
         funs.push(fn_tok);
     }

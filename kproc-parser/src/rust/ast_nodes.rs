@@ -143,7 +143,17 @@ pub struct GenericParams {
 pub enum GenericParam {
     LifetimeParam(LifetimeParam),
     TypeParam(TyToken),
-    // FIXME: support the const params
+    Bounds(Bound), // FIXME: support the const params
+}
+
+impl GenericParam {
+    pub fn add_bound(&mut self, bound: Bound) {
+        match self {
+            Self::TypeParam(param) => param.bounds.push(bound),
+            Self::LifetimeParam(param) => param.bounds.push(bound),
+            Self::Bounds(params) => params.add_bound(bound),
+        }
+    }
 }
 
 impl Display for GenericParam {
@@ -151,21 +161,51 @@ impl Display for GenericParam {
         match self {
             Self::LifetimeParam(param) => write!(f, "{param}"),
             Self::TypeParam(param) => write!(f, "{param}"),
+            Self::Bounds(bounds) => write!(f, "{bounds}"),
         }
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum Bound {
+    Lifetime(LifetimeParam),
+    Trait(TypeParam),
+}
+
+impl Bound {
+    pub fn add_bound(&mut self, bound: Bound) {
+        match self {
+            Self::Trait(param) => param.bounds.push(bound),
+            Self::Lifetime(param) => param.bounds.push(bound),
+        }
+    }
+}
+
+impl std::fmt::Display for Bound {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        unimplemented!()
+    }
+}
+
+/// 'a: 'static
 #[derive(Debug, Clone)]
 pub struct LifetimeParam {
     pub lifetime_or_label: TokenTree,
-    pub bounds: Option<TypeParamBound>,
+    pub bounds: Vec<Bound>,
 }
 
 impl std::fmt::Display for LifetimeParam {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut code = format!("'{}", self.lifetime_or_label);
-        if let Some(bounds) = &self.bounds {
-            code += &format!(" {bounds}");
+        if !self.bounds.is_empty() {
+            code += &format!(
+                " {}",
+                self.bounds
+                    .iter()
+                    .map(|bound| format!("{bound} +"))
+                    .collect::<String>()
+            );
+            code = code.strip_suffix("+").unwrap_or(&code).to_owned();
         }
         write!(f, "{code}")
     }
@@ -174,21 +214,7 @@ impl std::fmt::Display for LifetimeParam {
 #[derive(Debug, Clone)]
 pub struct TypeParam {
     pub identifier: TokenTree,
-    pub bounds: Option<TypeParamBound>,
-    pub ty: Option<TyToken>,
-}
-
-#[derive(Debug, Clone)]
-pub enum TypeParamBound {
-    Lifetime(Vec<TokenTree>),
-    TraitBound,
-    // FIXME: complete this
-}
-
-impl std::fmt::Display for TypeParamBound {
-    fn fmt(&self, _: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
+    pub bounds: Vec<Bound>,
 }
 
 impl Display for GenericParams {
@@ -257,6 +283,7 @@ pub struct TyToken {
     pub dyn_tok: Option<TokenTree>,
     pub lifetime: Option<LifetimeParam>,
     pub generics: Option<Vec<TyToken>>,
+    pub bounds: Vec<Bound>,
 }
 
 impl Display for TyToken {
