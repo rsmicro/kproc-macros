@@ -182,8 +182,16 @@ impl Bound {
 }
 
 impl std::fmt::Display for Bound {
-    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        unimplemented!()
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let code = match self {
+            Self::Trait(params) => {
+                format!("{params}")
+            }
+            Self::Lifetime(params) => {
+                format!("{params}")
+            }
+        };
+        writeln!(f, "{code}")
     }
 }
 
@@ -199,13 +207,14 @@ impl std::fmt::Display for LifetimeParam {
         let mut code = format!("'{}", self.lifetime_or_label);
         if !self.bounds.is_empty() {
             code += &format!(
-                " {}",
+                ": {}",
                 self.bounds
                     .iter()
                     .map(|bound| format!("{bound} +"))
                     .collect::<String>()
             );
             code = code.strip_suffix('+').unwrap_or(&code).to_owned();
+            code += ",";
         }
         write!(f, "{code}")
     }
@@ -215,6 +224,24 @@ impl std::fmt::Display for LifetimeParam {
 pub struct TypeParam {
     pub identifier: TokenTree,
     pub bounds: Vec<Bound>,
+}
+
+impl std::fmt::Display for TypeParam {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut code = format!("{}", self.identifier);
+        if !self.bounds.is_empty() {
+            code += &format!(
+                ": {}",
+                self.bounds
+                    .iter()
+                    .map(|bound| format!("{bound} +"))
+                    .collect::<String>()
+            );
+            code = code.strip_suffix('+').unwrap_or(&code).to_owned();
+            code += ",";
+        }
+        write!(f, "{code}")
+    }
 }
 
 impl Display for GenericParams {

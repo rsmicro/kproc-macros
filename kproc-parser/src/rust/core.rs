@@ -273,7 +273,7 @@ pub fn check_and_parse_return_type(
     toks: &mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> kparser::Result<Option<TyToken>> {
-    if toks.is_end() {
+    if toks.is_group() {
         return Ok(None);
     }
     if check_tok(toks, "-", 0) {
