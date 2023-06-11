@@ -61,14 +61,14 @@ impl KTokenStream {
 
     /// perform a search operation inside the stream by a number
     /// of specified steps.
-    pub fn lookup<'c>(&'c self, step: usize) -> &'c TokenTree {
+    pub fn lookup(&self, step: usize) -> &TokenTree {
         assert!(self.size > self.pos + step);
         &self.kstream[self.pos + step]
     }
 
     /// perform a search operation inside the stream by a number
     /// of specified steps.
-    pub fn has<'c>(&'c self, step: usize) -> bool {
+    pub fn has(&self, step: usize) -> bool {
         self.size > self.pos + step
     }
 
@@ -97,7 +97,7 @@ impl KTokenStream {
 
     /// return the last token of the stream.
     pub fn last(&self) -> &TokenTree {
-        &self.kstream.last().unwrap()
+        self.kstream.last().unwrap()
     }
 
     /// match the current token with the one specified.

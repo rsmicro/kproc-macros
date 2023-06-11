@@ -120,7 +120,7 @@ impl TryFrom<&TokenStream> for StructToken {
     type Error = KParserError;
 
     fn try_from(value: &TokenStream) -> Result<Self, Self::Error> {
-        let mut stream = KTokenStream::new(&value);
+        let mut stream = KTokenStream::new(value);
         parse_struct(&mut stream, &DummyTracer {})
     }
 }
@@ -182,7 +182,7 @@ impl Bound {
 }
 
 impl std::fmt::Display for Bound {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         unimplemented!()
     }
 }
@@ -205,7 +205,7 @@ impl std::fmt::Display for LifetimeParam {
                     .map(|bound| format!("{bound} +"))
                     .collect::<String>()
             );
-            code = code.strip_suffix("+").unwrap_or(&code).to_owned();
+            code = code.strip_suffix('+').unwrap_or(&code).to_owned();
         }
         write!(f, "{code}")
     }

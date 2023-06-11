@@ -28,8 +28,8 @@ use super::core::{check_and_parse_fn_qualifier, check_is_fun_with_visibility};
 ///
 /// async unsafe fn unsafe_example() { }
 /// ```
-pub fn parse_fn<'c>(
-    toks: &'c mut KTokenStream,
+pub fn parse_fn(
+    toks: &mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> Result<MethodDeclToken, KParserError> {
     trace!(tracer, "Start parsing fn");

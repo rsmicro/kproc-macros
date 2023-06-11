@@ -13,8 +13,8 @@ use super::kattr::check_and_parse_cond_attribute;
 
 /// parsing a rust data structure inside a AST that will be easy to
 /// manipulate and use by a compiler
-pub fn parse_struct<'c>(
-    stream: &'c mut KTokenStream,
+pub fn parse_struct(
+    stream: &mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> Result<StructToken, KParserError> {
     let attrs = check_and_parse_cond_attribute(stream, tracer);

@@ -8,8 +8,8 @@ use crate::rust::kfunc::parse_fn;
 use crate::{check, trace};
 
 /// helper function that allow to parse an impl block
-pub fn parse_impl<'c>(
-    toks: &'c mut KTokenStream,
+pub fn parse_impl(
+    toks: &mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> kparser::Result<ImplToken> {
     let attr = check_and_parse_cond_attribute(toks, tracer);
@@ -48,7 +48,7 @@ pub fn parse_impl<'c>(
         name,
         // FIXME: make an abstraction for this kind of type
         for_ty: None,
-        raw_block: raw_impl_block.into(),
+        raw_block: raw_impl_block,
         functions: funs,
     };
 

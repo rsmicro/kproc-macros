@@ -20,11 +20,9 @@ pub fn parse_ty(
     tracer: &dyn KParserTracer,
 ) -> kparser::Result<Option<TyToken>> {
     let ref_tok = check_and_parse_ref(stream);
-    let lifetime = check_and_parse_lifetime(stream).and_then(|lifetime| {
-        Some(LifetimeParam {
-            lifetime_or_label: lifetime,
-            bounds: Vec::new(),
-        })
+    let lifetime = check_and_parse_lifetime(stream).map(|lifetime| LifetimeParam {
+        lifetime_or_label: lifetime,
+        bounds: Vec::new(),
     });
     let dyn_tok = check_and_parse_dyn(stream);
     let mut_tok = check_and_parse_mut(stream);
