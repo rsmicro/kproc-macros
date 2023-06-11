@@ -8,8 +8,8 @@ use crate::{check, parse_visibility, trace};
 use super::ast_nodes::TraitToken;
 
 /// helper function that allow to parse an trait definition
-pub fn parse_trait<'c>(
-    ast: &'c mut KTokenStream,
+pub fn parse_trait(
+    ast: &mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> Result<TraitToken, KParserError> {
     trace!(tracer, "start parning the trait");
@@ -39,7 +39,7 @@ pub fn parse_trait<'c>(
         generics,
         inn_attrs: None, // FIXME: parse this
         associated_items: vec![],
-        raw_block: raw_block.into(),
+        raw_block,
         functions: funs,
     };
     trace!(tracer, "trait token result: {:#?}", trait_tok);

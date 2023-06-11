@@ -5,8 +5,8 @@ use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 use crate::rust::ast_nodes::{AttrToken, AttributeToken, CondAttributeToken};
 
-pub fn check_and_parse_cond_attribute<'c>(
-    ast: &'c mut KTokenStream,
+pub fn check_and_parse_cond_attribute(
+    ast: &mut KTokenStream,
     tracer: &dyn KParserTracer,
 ) -> HashMap<String, AttrToken> {
     tracer.log("check and parse an attribute");
@@ -22,7 +22,7 @@ pub fn check_and_parse_cond_attribute<'c>(
         } else if ast.is_group() {
             // check (
             if let TokenTree::Group(_) = ast.lookup(2) {
-                let name = ast.advance().to_owned();
+                let name = ast.advance();
                 let _ = ast.advance();
                 // keep parsing the conditional attribute
                 // FIXME: parse a sequence of attribute
@@ -44,22 +44,19 @@ pub fn check_and_parse_cond_attribute<'c>(
             }
         }
     }
-    return attrs;
+    attrs
 }
 
-pub fn check_and_parse_attribute<'c>(ast: &'c mut KTokenStream) -> Option<AttributeToken> {
-    let name = ast.advance().to_owned();
+pub fn check_and_parse_attribute(ast: &mut KTokenStream) -> Option<AttributeToken> {
+    let name = ast.advance();
     // FIXME: check if it is a valid name
     if !ast.is_end() && ast.match_tok("=") {
         let _ = ast.advance();
-        let value = ast.advance().to_owned();
+        let value = ast.advance();
         return Some(AttributeToken {
-            name: name.to_owned(),
-            value: Some(value.to_owned()),
+            name,
+            value: Some(value),
         });
     }
-    Some(AttributeToken {
-        name: name.to_owned(),
-        value: None,
-    })
+    Some(AttributeToken { name, value: None })
 }

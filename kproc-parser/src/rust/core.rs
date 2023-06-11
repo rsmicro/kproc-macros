@@ -30,10 +30,8 @@ pub fn check_and_parse_generics_params(
                     bounds: Vec::new(),
                 };
                 generics.push(GenericParam::LifetimeParam(param));
-            } else {
-                if let Some(ty) = parse_ty(ast, tracer)? {
-                    generics.push(GenericParam::TypeParam(ty));
-                }
+            } else if let Some(ty) = parse_ty(ast, tracer)? {
+                generics.push(GenericParam::TypeParam(ty));
             }
         }
         ast.next(); // consume the `>` toks
@@ -59,7 +57,7 @@ pub fn check_and_parse_bounds(
         return Ok(None);
     }
 
-    let mut inner_stream = stream;
+    let inner_stream = stream;
     if !is_starting_tok {
         trace!(tracer, "in a `<...>` token group, uwrapping it ...");
         *inner_stream = inner_stream.advance().to_token_stream();
@@ -88,19 +86,18 @@ pub fn check_and_parse_bounds(
                             tok.to_string()
                         );
                         trace!(tracer, "new bound for the current trait");
-                        let bound =
-                            if let Some(lifetime) = check_and_parse_lifetime(&mut inner_stream) {
-                                ast_nodes::Bound::Lifetime(LifetimeParam {
-                                    lifetime_or_label: lifetime,
-                                    bounds: Vec::new(),
-                                })
-                            } else {
-                                let trait_bound = inner_stream.advance();
-                                ast_nodes::Bound::Trait(TypeParam {
-                                    identifier: trait_bound,
-                                    bounds: Vec::new(),
-                                })
-                            };
+                        let bound = if let Some(lifetime) = check_and_parse_lifetime(inner_stream) {
+                            ast_nodes::Bound::Lifetime(LifetimeParam {
+                                lifetime_or_label: lifetime,
+                                bounds: Vec::new(),
+                            })
+                        } else {
+                            let trait_bound = inner_stream.advance();
+                            ast_nodes::Bound::Trait(TypeParam {
+                                identifier: trait_bound,
+                                bounds: Vec::new(),
+                            })
+                        };
                         assert!(
                             generic.is_some(),
                             "concatenation bound `+` on generic used in the wrong way"
@@ -117,7 +114,7 @@ pub fn check_and_parse_bounds(
                             "declaration bound with `:` used in the wrong way"
                         );
                         trace!(tracer, "parising token {:?}", inner_stream.peek());
-                        if let Some(lifetime) = check_and_parse_lifetime(&mut inner_stream) {
+                        if let Some(lifetime) = check_and_parse_lifetime(inner_stream) {
                             trace!(tracer, "life bound found {:?}", lifetime);
                             generic = Some(GenericParam::LifetimeParam(LifetimeParam {
                                 lifetime_or_label: lifetime,
@@ -160,22 +157,22 @@ pub fn check_and_parse_bounds(
 
 /// helper function that check and parse the reference token `&`, if
 /// is not present return `None`.
-pub fn check_and_parse_ref<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_ref(ast: &mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek();
     match token.to_string().as_str() {
-        "&" => Some(ast.advance().to_owned()),
+        "&" => Some(ast.advance()),
         _ => None,
     }
 }
 
 /// helper function that check and parse the lifetime symbol `'`, if
 /// is not present return `None`.
-pub fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_lifetime(ast: &mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek().to_string();
     match token.as_str() {
         "'" => {
             ast.next();
-            Some(ast.advance().to_owned())
+            Some(ast.advance())
         }
         _ => None,
     }
@@ -183,20 +180,20 @@ pub fn check_and_parse_lifetime<'c>(ast: &'c mut KTokenStream) -> Option<TokenTr
 
 /// helper function that check and parse the `mut` token, if is not
 /// present return `None`.
-pub fn check_and_parse_mut<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_mut(ast: &mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek().to_string();
     match token.as_str() {
-        "mut" => Some(ast.advance().to_owned()),
+        "mut" => Some(ast.advance()),
         _ => None,
     }
 }
 
 /// helper function that check and parser the `dyn` token, if is not
 /// present return `None`.
-pub fn check_and_parse_dyn<'c>(ast: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_dyn(ast: &mut KTokenStream) -> Option<TokenTree> {
     let token = ast.peek().to_string();
     match token.as_str() {
-        "dyn" => Some(ast.advance().to_owned()),
+        "dyn" => Some(ast.advance()),
         _ => None,
     }
 }
@@ -210,7 +207,7 @@ macro_rules! parse_visibility {
 
 /// parse visibility identifier like `pub(crate)`` and return an option
 /// value in case it is not defined.
-pub fn check_and_parse_visibility<'c>(toks: &'c mut KTokenStream) -> Option<TokenTree> {
+pub fn check_and_parse_visibility(toks: &mut KTokenStream) -> Option<TokenTree> {
     if check_identifier(toks, "pub", 0) {
         return Some(toks.advance());
     }
@@ -234,12 +231,12 @@ pub fn check_and_parse_fn_tok(toks: &mut KTokenStream) -> Option<TokenTree> {
 pub fn check_is_fun_with_visibility(toks: &mut KTokenStream) -> bool {
     if check_identifier(toks, "pub", 0) {
         if check_identifiers(toks, &["async", "const", "unsafe"], 1) {
-            return check_identifier(&toks, "fn", 2);
+            return check_identifier(toks, "fn", 2);
         } else if check_identifier(toks, "fn", 1) {
             return true;
         }
     }
-    return false;
+    false
 }
 
 pub fn check_identifier(toks: &KTokenStream, ident: &str, step: usize) -> bool {
@@ -290,5 +287,5 @@ pub fn check_and_parse_return_type(
             return Ok(ty);
         }
     }
-    return Ok(None);
+    Ok(None)
 }
