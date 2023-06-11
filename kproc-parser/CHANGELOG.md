@@ -1,3 +1,15 @@
+# v0.0.1-beta.7
+
+## Fixed
+- fix clippy errors ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/5d3d0134a40e9cee9443ffd424fe1c1e04a6dd39)). @vincenzopalazzo 11-06-2023
+- decode the docs attribute on a trait ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/9559cf1360a9c032f53be0520d4d567d9b9b9156)). @vincenzopalazzo 12-05-2023
+- decode the docs attribute on a function ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/cce56cac5eda79004ab24af6de132608134b28cf)). @vincenzopalazzo 12-05-2023
+- decode the docs attribute on a struct ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/e42dc809cecf5327471ea0dca66bf1b96e6cd894)). @vincenzopalazzo 12-05-2023
+
+## Added
+- support the parsing of the trait bound ([commit](https://github.com/vincenzopalazzo/kproc-macros/commit/9e4cf77e3a9ab86c1e8b472f74632e3b23cc3af0)). @vincenzopalazzo 11-06-2023
+
+
 # v0.0.1-beta.6
 
 ## Fixed
