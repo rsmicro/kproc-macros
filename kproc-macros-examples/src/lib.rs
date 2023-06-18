@@ -1,6 +1,6 @@
 use kproc_parser::kparser::{DummyTracer, KParserTracer};
 use kproc_parser::rust::kparser::RustParser;
-use kproc_parser::{error, trace};
+use kproc_parser::trace;
 use proc_macro::TokenStream;
 
 mod gen;
@@ -25,6 +25,15 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
     toks
 }
 
+#[proc_macro_derive(EnumParser)]
+pub fn derive_enum(stream: TokenStream) -> TokenStream {
+    let tracer = Tracer {};
+    let parser = RustParser::with_tracer(&tracer);
+    let ast = parser.parse_enum(&stream);
+    trace!(tracer, "emum types {:#?}", ast.values);
+    "".parse().unwrap()
+}
+
 #[proc_macro_attribute]
 pub fn derive_impl(_: TokenStream, input: TokenStream) -> TokenStream {
     let tracer = DummyTracer {};
@@ -37,7 +46,7 @@ pub fn derive_impl(_: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn default_impl(_: TokenStream, input: TokenStream) -> TokenStream {
-    let tracer = Tracer {};
+    let tracer = DummyTracer {};
     let parsr = RustParser::with_tracer(&tracer);
 
     let _ = parsr.parse_trait(&input);
@@ -46,7 +55,7 @@ pub fn default_impl(_: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn derive_fn(_: TokenStream, input: TokenStream) -> TokenStream {
-    let tracer = Tracer {};
+    let tracer = DummyTracer {};
     let parser = RustParser::with_tracer(&tracer);
     let ast = parser.parse_fn(&input);
     trace!(tracer, "function AST: {:#?}", ast);
