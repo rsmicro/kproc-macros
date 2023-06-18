@@ -1,4 +1,5 @@
 use super::ast_nodes::{ImplToken, MethodDeclToken, TopLevelNode, TraitToken};
+use super::kenum::{self, EnumToken};
 use super::kfunc::parse_fn;
 use super::kimpl::parse_impl;
 use super::ktrait::parse_trait;
@@ -87,5 +88,11 @@ impl<'tcx> RustParser<'tcx> {
         let mut stream = KTokenStream::from(stream);
         let result = parse_fn(&mut stream, self.tracer);
         unwrap!(result, MethodDeclToken::default())
+    }
+
+    pub fn parse_enum(&self, stream: &TokenStream) -> EnumToken {
+        let mut stream = KTokenStream::from(stream);
+        let result = kenum::parse(&mut stream, self.tracer);
+        unwrap!(result, EnumToken::default())
     }
 }

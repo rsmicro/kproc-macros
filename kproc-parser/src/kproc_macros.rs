@@ -137,6 +137,7 @@ impl KTokenStream {
         }
     }
 
+    // FIXME: this should consume the token
     pub fn unwrap_group_as_stream(&self) -> TokenStream {
         match self.peek() {
             TokenTree::Group(stream) => stream.stream(),

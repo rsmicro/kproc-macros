@@ -5,6 +5,7 @@ use std::fmt::Debug;
 use kproc_macros_examples::default_impl;
 use kproc_macros_examples::derive_fn;
 use kproc_macros_examples::derive_impl;
+use kproc_macros_examples::EnumParser;
 use kproc_macros_examples::RustBuilder;
 
 trait GenTrait {}
@@ -64,6 +65,14 @@ pub struct BooComplexCommit {
     attr: String,
     #[allow(dead_code)]
     self_ref: u32,
+}
+
+#[derive(EnumParser)]
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
 }
 
 struct ForImplDerive {}
