@@ -104,8 +104,11 @@ pub fn check_and_parse_bounds(
                         );
                         trace!(tracer, "bound found `{:?}`", bound);
                         let Some(generic) = generic.as_mut() else {
-                            return Err(build_error!(inner_stream.peek().clone(), "concatenation bound `+` on generic used in the wrong way"));
-                         };
+                            return Err(build_error!(
+                                inner_stream.peek().clone(),
+                                "concatenation bound `+` on generic used in the wrong way"
+                            ));
+                        };
                         generic.add_bound(bound);
                     }
                     _ => {

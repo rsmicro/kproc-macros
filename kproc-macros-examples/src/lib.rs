@@ -25,7 +25,7 @@ pub fn derive_rust(input: TokenStream) -> TokenStream {
     toks
 }
 
-#[proc_macro_derive(EnumParser)]
+#[proc_macro_derive(EnumParser, attributes(cli))]
 pub fn derive_enum(stream: TokenStream) -> TokenStream {
     let tracer = Tracer {};
     let parser = RustParser::with_tracer(&tracer);

@@ -75,6 +75,20 @@ enum Message {
     ChangeColor(i32, i32, i32),
 }
 
+#[derive(EnumParser)]
+enum MessageWithAttr {
+    #[cli]
+    Quit,
+    #[cli = "foo"]
+    Move {
+        x: i32,
+        y: i32,
+    },
+    #[cli(help = "this is an helper message")]
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+
 struct ForImplDerive {}
 
 /// this is a impl doc
