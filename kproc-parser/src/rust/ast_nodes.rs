@@ -16,6 +16,7 @@ use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::TokenTree;
 
 use super::fmt::{fmt_generics, fmt_ty};
+use super::kenum::EnumToken;
 use super::kimpl::parse_impl;
 use super::kstruct::parse_struct;
 use super::ktrait::parse_trait;
@@ -38,6 +39,10 @@ pub trait TopLevelAST {
     fn is_fn(&self) -> bool {
         false
     }
+
+    fn is_enum(&self) -> bool {
+        false
+    }
 }
 
 pub enum TopLevelNode {
@@ -45,6 +50,7 @@ pub enum TopLevelNode {
     Trait(TraitToken),
     Impl(ImplToken),
     Fn(MethodDeclToken),
+    Enum(EnumToken),
 }
 
 impl Display for TopLevelNode {
@@ -54,6 +60,7 @@ impl Display for TopLevelNode {
             Self::Struct(node) => write!(f, "{node}"),
             Self::Trait(node) => write!(f, "{node}"),
             Self::Fn(node) => write!(f, "{node}"),
+            Self::Enum(node) => write!(f, "{node}"),
         }
     }
 }
@@ -79,6 +86,22 @@ impl From<TraitToken> for TopLevelNode {
 impl From<MethodDeclToken> for TopLevelNode {
     fn from(value: MethodDeclToken) -> Self {
         TopLevelNode::Fn(value)
+    }
+}
+
+impl From<EnumToken> for TopLevelNode {
+    fn from(value: EnumToken) -> Self {
+        TopLevelNode::Enum(value)
+    }
+}
+
+impl TopLevelAST for EnumToken {
+    fn is_enum(&self) -> bool {
+        true
+    }
+
+    fn span(&self) -> TokenTree {
+        self.identifier.clone()
     }
 }
 
