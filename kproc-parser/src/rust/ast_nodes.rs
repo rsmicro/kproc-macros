@@ -4,22 +4,21 @@
 //!
 //! Each implementation contains information
 //! regarding the position in `KDiagnostic`.
-use crate::proc_macro::TokenStream;
 
-use crate::{
-    kparser::{DummyTracer, KParserError},
-    kproc_macros::KTokenStream,
-    proc_macro::TokenTree,
-};
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::rc::Rc;
 
-use super::{
-    fmt::{fmt_generics, fmt_ty},
-    kimpl::parse_impl,
-    kstruct::parse_struct,
-    ktrait::parse_trait,
-};
+use crate::proc_macro::TokenStream;
+
+use crate::kparser::{DummyTracer, KParserError};
+use crate::kproc_macros::KTokenStream;
+use crate::proc_macro::TokenTree;
+
+use super::fmt::{fmt_generics, fmt_ty};
+use super::kimpl::parse_impl;
+use super::kstruct::parse_struct;
+use super::ktrait::parse_trait;
 
 pub trait TopLevelAST {
     fn span(&self) -> TokenTree;
@@ -384,9 +383,15 @@ pub struct AttributeToken {
     pub value: Option<TokenTree>,
 }
 
+/// Attribute token IR.
+///
+/// Defined in <https://doc.rust-lang.org/stable/reference/attributes.html>
 #[derive(Debug, Clone)]
+#[deprecated(note = "Please use the AttrV2")]
 pub enum AttrToken {
+    #[deprecated]
     Attr(AttributeToken),
+    #[deprecated]
     CondAttr(CondAttributeToken),
 }
 
@@ -418,6 +423,51 @@ impl AttrToken {
             Self::CondAttr(_) => true,
         }
     }
+}
+
+/// Attribute token IR.
+///
+/// Defined in <https://doc.rust-lang.org/stable/reference/attributes.html>
+#[derive(Debug)]
+pub enum AttributeV2Token {
+    /// InnerAttribute :
+    ///  # ! [ Attr ]
+    InnerAttribute(Attr),
+    /// OuterAttribute:
+    ///  # [ Attr ]
+    OuterAttribute(Attr),
+}
+
+/// Inner Attribute token IR.
+///
+/// Attr :
+/// SimplePath AttrInput?
+///
+/// AttrInput :
+/// DelimTokenTree
+/// | = Expression
+///
+/// DelimTokenTree :
+/// ( TokenTree* )
+/// | [ TokenTree* ]
+/// | { TokenTree* }
+///
+/// Defined in <https://doc.rust-lang.org/stable/reference/attributes.html>
+#[derive(Debug)]
+pub struct Attr {
+    /// The patch like `tokio::main` where for us
+    /// `main` is the identifier and `tokio::` is the patch
+    pub path: Vec<TokenTree>,
+    /// The name of the identifier inside the expression
+    pub identifier: TokenTree,
+    /// The raw token tree of the attribute after
+    /// parsing the `#![]` or `![]`
+    pub raw_attr: TokenTree,
+    /// FIXME(vincenzopalazzo): is this enough in the future?
+    ///
+    /// The value of the token tree if specifed
+    /// e.g: `#[key="value"]` or `#[key(key=value)]`
+    pub value: Option<Rc<Attr>>,
 }
 
 /// AST Token to store information about an

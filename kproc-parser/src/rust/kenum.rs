@@ -5,10 +5,14 @@ use std::vec::Vec;
 use crate::kparser::{KParserError, KParserTracer};
 use crate::kproc_macros::KTokenStream;
 use crate::proc_macro::{Delimiter, TokenStream, TokenTree};
-use crate::{build_error, check, kparser, parse_visibility, trace};
+use crate::{build_error, check, kparser, parse_attributes, parse_visibility, trace};
+
+use super::ast_nodes::AttributeV2Token;
+use super::kattr::prelude::*;
 
 #[derive(Debug)]
 pub struct EnumToken {
+    pub attributes: HashMap<String, AttributeV2Token>,
     pub visibility: Option<TokenTree>,
     pub identifier: TokenTree,
     pub raw_body: TokenStream,
@@ -17,6 +21,7 @@ pub struct EnumToken {
 
 #[derive(Debug)]
 pub struct EnumValue {
+    pub attributes: HashMap<String, AttributeV2Token>,
     pub kind: EnumValueKind,
     pub identifier: TokenTree,
 }
@@ -47,6 +52,7 @@ impl Default for EnumToken {
 }
 
 pub fn parse(stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> kparser::Result<EnumToken> {
+    let attributes = parse_attributes!(stream, tracer)?;
     let visibility = parse_visibility!(stream);
     check!("enum", stream.advance())?;
     let identifier = stream.advance();
@@ -54,6 +60,7 @@ pub fn parse(stream: &mut KTokenStream, tracer: &dyn KParserTracer) -> kparser::
     let mut body_stream = KTokenStream::new(&raw_body);
     let values = parse_body(&mut body_stream, tracer)?;
     Ok(EnumToken {
+        attributes,
         visibility,
         identifier,
         raw_body,
@@ -67,6 +74,7 @@ fn parse_body<T: KParserTracer + ?Sized>(
 ) -> kparser::Result<Vec<EnumValue>> {
     let mut values = Vec::new();
     while !stream.is_end() {
+        let attributes = parse_attributes!(stream, tracer)?;
         let identifier = stream.advance();
         trace!(tracer, "identifier {:?}", identifier);
         let content = stream.peek();
@@ -97,7 +105,11 @@ fn parse_body<T: KParserTracer + ?Sized>(
             check!(",", stream.advance())?;
         }
         trace!(tracer, "Enum kind found {:?}", kind);
-        values.push(EnumValue { kind, identifier });
+        values.push(EnumValue {
+            attributes,
+            kind,
+            identifier,
+        });
     }
     Ok(values)
 }
