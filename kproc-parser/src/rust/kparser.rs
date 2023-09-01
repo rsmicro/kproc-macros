@@ -59,6 +59,11 @@ impl<'tcx> RustParser<'tcx> {
         }
 
         let mut ast = KTokenStream::new(stream);
+        if let Ok(tok) = kenum::parse(&mut ast, self.tracer) {
+            return Ok(tok.into());
+        }
+
+        let mut ast = KTokenStream::new(stream);
         if let Ok(tok) = parse_fn(&mut ast, self.tracer) {
             return Ok(tok.into());
         }
